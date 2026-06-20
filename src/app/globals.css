@@ -1,0 +1,214 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+:root {
+  --font-cormorant: 'Cormorant Garamond', Georgia, serif;
+  --font-inter: 'Inter', system-ui, sans-serif;
+
+  /* Wedding color tokens */
+  --color-ivory: #fdf8f0;
+  --color-champagne: #f5ede0;
+  --color-sand: #d4a574;
+  --color-dark: #1a1209;
+  --color-colombia-teal: #0d9488;
+  --color-colombia-teal-dark: #0f766e;
+  --color-usa-emerald: #059669;
+  --color-usa-emerald-dark: #065f46;
+
+  /* shadcn/ui vars */
+  --background: #fdf8f0;
+  --foreground: #1a1209;
+  --card: #ffffff;
+  --card-foreground: #1a1209;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --ring: #d4a574;
+  --radius: 0.625rem;
+}
+
+@theme inline {
+  --font-serif: var(--font-cormorant);
+  --font-sans: var(--font-inter);
+
+  --color-ivory: var(--color-ivory);
+  --color-champagne: var(--color-champagne);
+  --color-sand: var(--color-sand);
+  --color-dark: var(--color-dark);
+  --color-colombia-teal: var(--color-colombia-teal);
+  --color-colombia-teal-dark: var(--color-colombia-teal-dark);
+  --color-usa-emerald: var(--color-usa-emerald);
+  --color-usa-emerald-dark: var(--color-usa-emerald-dark);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-color: var(--color-ivory);
+    color: var(--color-dark);
+    font-family: var(--font-inter);
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-cormorant);
+  }
+}
+
+@layer components {
+  /* Wedding serif headings */
+  .heading-display {
+    font-family: var(--font-cormorant);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    font-size: clamp(2.5rem, 8vw, 5.5rem);
+    line-height: 1.05;
+  }
+
+  .heading-section {
+    font-family: var(--font-cormorant);
+    font-weight: 300;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+  }
+
+  .heading-card {
+    font-family: var(--font-cormorant);
+    font-weight: 400;
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+
+  /* Label / overline style */
+  .label-overline {
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    font-size: 0.6rem;
+    font-family: var(--font-inter);
+    font-weight: 500;
+  }
+
+  /* Wedding card */
+  .card-wedding {
+    border-radius: 1rem;
+    background-color: white;
+    border: 1px solid var(--color-champagne);
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .card-glass {
+    border-radius: 1rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Buttons */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 2rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-family: var(--font-inter);
+    font-weight: 500;
+    transition: opacity 0.2s;
+    background-color: var(--color-dark);
+    color: var(--color-ivory);
+  }
+  .btn-primary:hover { opacity: 0.8; }
+
+  .btn-gold {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 2rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-family: var(--font-inter);
+    font-weight: 500;
+    transition: opacity 0.2s;
+    background-color: var(--color-sand);
+    color: white;
+  }
+  .btn-gold:hover { opacity: 0.8; }
+
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 2rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-family: var(--font-inter);
+    font-weight: 500;
+    transition: opacity 0.2s;
+    border: 1px solid rgba(253, 248, 240, 0.6);
+    color: #fdf8f0;
+  }
+  .btn-outline:hover { opacity: 0.7; }
+
+  /* Section padding */
+  .section-pad {
+    padding: 5rem 1.5rem;
+  }
+  @media (min-width: 768px) {
+    .section-pad {
+      padding: 7rem 2rem;
+    }
+  }
+
+  .container-wedding {
+    max-width: 72rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Divider */
+  .divider-gold {
+    height: 1px;
+    background-color: var(--color-sand);
+    opacity: 0.4;
+  }
+
+  /* Fade-up animation */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up {
+    animation: fadeUp 0.8s ease both;
+  }
+}
+
+/* Utility color classes */
+.text-ivory { color: var(--color-ivory); }
+.text-sand { color: var(--color-sand); }
+.text-dark { color: var(--color-dark); }
+.text-champagne { color: var(--color-champagne); }
+.text-colombia-teal { color: var(--color-colombia-teal); }
+.text-colombia-teal-dark { color: var(--color-colombia-teal-dark); }
+.text-usa-emerald { color: var(--color-usa-emerald); }
+.text-usa-emerald-dark { color: var(--color-usa-emerald-dark); }
+.bg-ivory { background-color: var(--color-ivory); }
+.bg-champagne { background-color: var(--color-champagne); }
+.bg-sand { background-color: var(--color-sand); }
+.bg-dark { background-color: var(--color-dark); }
+.fill-sand { fill: var(--color-sand); }
