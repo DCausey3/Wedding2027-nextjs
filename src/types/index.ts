@@ -123,10 +123,8 @@ export interface DashboardStats {
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export interface AuthUser {
-  userId: string;
-  username: string;
-  email?: string;
-  role: UserRole;
-  isAdmin: boolean;
-  isBrideOrGroom: boolean;
+    userId: string;
+    email: string;
+    isAdmin: boolean;
+
 }
