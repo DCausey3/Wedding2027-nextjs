@@ -10,7 +10,7 @@ export default async function AdminLayout({
   const user = await getServerAuthUser();
 
   if (!user) redirect("/admin/login");
-  if (!user.isBrideOrGroom) redirect("/");
+    if (!user.isAdmin) redirect("/");
 
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: "#f5ede0" }}>

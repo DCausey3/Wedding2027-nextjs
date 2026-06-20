@@ -11,7 +11,7 @@ function generateInviteCode(lastName: string) {
 
 export async function POST(req: NextRequest) {
   const user = await getServerAuthUser();
-  if (!user?.isBrideOrGroom) {
+  if (!user?.isAdmin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
