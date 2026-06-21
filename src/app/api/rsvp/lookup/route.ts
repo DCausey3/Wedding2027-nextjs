@@ -45,6 +45,8 @@ export async function GET(req: NextRequest) {
                 plusOneCount: guest.plusOneCount,
                 selectedWedding: guest.selectedWedding,
                 stdResponded: guest.stdResponded,
+                role:guest.role,
+                invitationType: guest.invitationType,
             },
             previousResponse: guest.stdResponded
                 ? {
