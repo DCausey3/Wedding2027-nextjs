@@ -53,6 +53,7 @@ export default function LoginPage() {
 
             // Soft RSVP gate: if they haven't confirmed save-the-date yet,
             // send them there instead of the homepage. Hard RSVP comes later.
+            sessionStorage.setItem('guest', JSON.stringify(guest));
             if (!guest.stdResponded) {
                 setError('');
                 router.push(`/save-the-date?guest=${guest.id}`);
