@@ -42,8 +42,8 @@ function fireConfetti() {
 }
 
 const WEDDING_INFO: Record<string, { label: string; date: string; place: string; color: string }> = {
-    Colombia: { label: "Colombia Wedding", date: "November 7, 2026", place: "Pereira, Colombia", color: TEAL },
-    USA: { label: "Florida Wedding", date: "December 12, 2026", place: "Miami, Florida", color: EMERALD },
+    Colombia: { label: "Colombia Wedding", date: "June 12, 2027", place: "Pereira, Colombia", color: TEAL },
+    USA: { label: "Florida Wedding", date: "May 15, 2027", place: "Miami, Florida", color: EMERALD },
 };
 
 function SaveTheDateContent() {
@@ -72,7 +72,7 @@ function SaveTheDateContent() {
                 const parsed = JSON.parse(stored);
                 if (parsed.id === guestId) {
                     setGuest(parsed);
-                    setHeadcount(Math.min(parsed.plusOneCount ?? 1, maxHeadcount));
+                    setHeadcount(parsed.plusOneCount ?? 1);
                     setPhone(parsed.phone ?? "");
                     setEmail(parsed.email ?? "");
                     return;
