@@ -8,15 +8,15 @@ type Guest = {
     id: string;
     firstName: string;
     lastName: string;
-    selectedWedding: "colombia" | "florida" | "both" | null;
+    selectedWedding: "Colombia" | "USA" | "Both" | null;
     plusOneCount: number | null;
     plusOneAllowed: boolean | null;
 };
 
 const WEDDING_LABEL: Record<string, string> = {
-    colombia: "the Colombia wedding (Nov 7, 2026)",
-    florida: "the Florida wedding (Dec 12, 2026)",
-    both: "both the Colombia and Florida weddings",
+    Colombia: "the Colombia wedding (Nov 7, 2026)",
+    USA: "the Florida wedding (Dec 12, 2026)",
+    Both: "both the Colombia and Florida weddings",
 };
 
 function SaveTheDateContent() {
@@ -35,15 +35,22 @@ function SaveTheDateContent() {
     // This page only works as part of the login → save-the-date flow.
     useEffect(() => {
         const stored = sessionStorage.getItem("guest");
+        console.log("[save-the-date] RAW sessionStorage:", stored);
+        console.log("[save-the-date] URL guestId:", guestId);
+
         if (stored) {
             try {
                 const parsed = JSON.parse(stored);
+                console.log("[save-the-date] PARSED guest:", parsed);
+                console.log("[save-the-date] parsed.id === guestId ?", parsed.id === guestId, "|", parsed.id, "vs", guestId);
+
                 if (parsed.id === guestId) {
                     setGuest(parsed);
                     setHeadcount(parsed.plusOneCount ?? 1);
                     return;
                 }
-            } catch {
+            } catch (e) {
+                console.log("[save-the-date] JSON.parse failed:", e);
                 // fall through to error state
             }
         }
