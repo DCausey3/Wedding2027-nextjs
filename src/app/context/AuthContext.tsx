@@ -1,3 +1,4 @@
+"use client";
 import { createContext, useContext, useState, ReactNode } from 'react';
 
 export type GuestType = 'colombia-only' | 'florida-only' | 'both' | 'choose-one' | 'bridal-party';
