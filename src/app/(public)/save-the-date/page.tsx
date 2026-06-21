@@ -72,7 +72,7 @@ function SaveTheDateContent() {
                 const parsed = JSON.parse(stored);
                 if (parsed.id === guestId) {
                     setGuest(parsed);
-                    setHeadcount(Math.min(parsed.plusOneCount ?? 1, maxAllowed));
+                    setHeadcount(Math.min(parsed.plusOneCount ?? 1, maxHeadcount));
                     setPhone(parsed.phone ?? "");
                     setEmail(parsed.email ?? "");
                     return;
