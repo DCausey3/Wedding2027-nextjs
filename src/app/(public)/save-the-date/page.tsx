@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import {
     Heart, Loader2, CheckCircle, Calendar, Sparkles, Bell, Gift, Mail, Phone as PhoneIcon,
 } from "lucide-react";
@@ -72,7 +72,7 @@ function SaveTheDateContent() {
                 const parsed = JSON.parse(stored);
                 if (parsed.id === guestId) {
                     setGuest(parsed);
-                    setHeadcount(parsed.plusOneCount ?? 1);
+                    setHeadcount(Math.min(parsed.plusOneCount ?? 1, maxAllowed));
                     setPhone(parsed.phone ?? "");
                     setEmail(parsed.email ?? "");
                     return;
