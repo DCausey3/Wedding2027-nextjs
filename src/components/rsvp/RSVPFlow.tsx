@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { Loader2, CheckCircle, Search, RefreshCw } from "lucide-react";
+import { useAuth } from "../../../src/app/context/AuthContext";
+import {GuestType} from "@/app/context/AuthContext";
+
 
 type Step = "lookup" | "form" | "done";
 
@@ -19,10 +22,20 @@ type RSVPFormState = {
 };
 
 type GuestData = {
+    name?: string;
+    type: GuestType;
+    rsvpComplete: boolean;
+    plusOne: boolean;
+    party: string[];
     id: string;
     firstName: string;
     lastName: string;
+    email?: string;
+    phone?: string;
     plusOneAllowed: boolean;
+    attendance?: string;
+    plusOneName?: string;
+    plusOneLastName?: string;
 } & Partial<RSVPFormState>; // Merges the form fields directly into the guest type
 
 const ENTREES = [
@@ -44,8 +57,9 @@ export function RSVPFlow() {
     const [code, setCode] = useState("");
     const [lookupError, setLookupError] = useState("");
     const [lookupLoading, setLookupLoading] = useState(false);
-    const [guest, setGuest] = useState<GuestData | null>(null);
+    const { guest,setGuest } = useAuth();
     const [submitLoading, setSubmitLoading] = useState(false);
+
 
     const [previousAttendance, setPreviousAttendance] = useState<string | null>(null);
     const [isReturningGuest, setIsReturningGuest] = useState(false);
