@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Lock, Mail, Phone, Key, ChevronRight, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import img2960 from '../IMG_2960.jpg';
-import Image from 'next/image';
+import Image from "next/image";
 
 type LoginMethod = 'code' | 'email' | 'phone';
 
@@ -67,10 +66,10 @@ export default function LoginPage() {
             {/* Left panel — image */}
             <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
                 <Image
-                    src={img2960}
+                    src="/images/IMG_2960.jpg"
                     alt="Jhoana & Damariel"
-                    fill
-                    className="object-cover"
+                    className="w-full h-full object-cover"
+                    style={{ objectPosition: 'center 20%' }}
                 />
                 <div
                     className="absolute inset-0"
