@@ -72,7 +72,7 @@ function SaveTheDateContent() {
                 const parsed = JSON.parse(stored);
                 if (parsed.id === guestId) {
                     setGuest(parsed);
-                    setHeadcount(parsed.plusOneCount ?? 1);
+                    setHeadcount(parsed.plusOneAllowed && parsed.plusOneCount ? parsed.plusOneCount + 1 : 1);
                     setPhone(parsed.phone ?? "");
                     setEmail(parsed.email ?? "");
                     return;
@@ -196,7 +196,10 @@ function SaveTheDateContent() {
         );
     }
 
-    const maxHeadcount = guest.plusOneCount ?? 1;
+    const maxHeadcount = guest.plusOneAllowed && guest.plusOneCount
+        ? guest.plusOneCount + 1
+        : 1;
+    const showHeadcountBlock = guest.plusOneAllowed && (guest.plusOneCount ?? 0) > 0;
     const weddingKeys = guest.selectedWedding === "Both" ? ["Colombia", "USA"] : guest.selectedWedding ? [guest.selectedWedding] : [];
 
     return (
@@ -331,10 +334,10 @@ function SaveTheDateContent() {
                     </div>
 
                     {/* Headcount — only on accept */}
-                    {attending === true && maxHeadcount > 1 && (
+                    {attending === true && showHeadcountBlock && (
                         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl p-5 mb-5" style={{ backgroundColor: "#fff", border: `1px solid ${CHAMP}` }}>
                             <p className="text-[0.6rem] uppercase tracking-[0.18em] mb-2" style={{ color: `${DARK}48` }}>
-                                You're set for {maxHeadcount} {maxHeadcount === 1 ? "guest" : "guests"}
+                                Your invitation includes {maxHeadcount} guests total
                             </p>
                             <p className="text-xs mb-3" style={{ color: `${DARK}52` }}>
                                 If your actual count is lower, please update it below.
