@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Lock, Mail, Phone, Key, ChevronRight, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import img2960 from '../../imports/IMG_2960.jpg';
+import img2960 from '../IMG_2960.jpg';
 import Image from 'next/image';
 
 type LoginMethod = 'code' | 'email' | 'phone';
