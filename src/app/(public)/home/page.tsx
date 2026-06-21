@@ -4,7 +4,7 @@ import HomePage from "@/components/home/HomePage";
 
 // Server components can handle metadata perfectly
 export const metadata: Metadata = {
-    title: "Home | Jhoana & Damariel Wedding 2026",
+    title: "Home | Jhoana & Damariel Wedding 2027",
 };
 
 export default function Page() {

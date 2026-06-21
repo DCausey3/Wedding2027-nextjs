@@ -120,7 +120,7 @@ function HeroSection() {
                 >
                     <CountdownTimer
                         targetDate={WEDDING_DATES.colombia}
-                        label="Colombia — Nov 7, 2026"
+                        label="Colombia — June 12, 2027"
                         textColor="#fdf8f0"
                         accentColor="#d4a574"
                         size="lg"
@@ -140,13 +140,7 @@ function HeroSection() {
                     >
                         View Invitation
                     </Link>
-                    <Link
-                        href="/login"
-                        className="px-8 py-3 rounded-full text-xs tracking-widest uppercase transition-all hover:bg-white/10"
-                        style={{ border: "1px solid rgba(253,248,240,0.6)", color: "#fdf8f0", letterSpacing: "0.2em" }}
-                    >
-                        Guest Login
-                    </Link>
+
                 </motion.div>
             </motion.div>
 
