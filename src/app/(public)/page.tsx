@@ -46,9 +46,19 @@ export default function LoginPage() {
                 throw new Error(json.error ?? 'Invitation not found. Please verify your details and try again.');
             }
 
+            const guest = json.guest;
+
             // Sync with your AuthContext state management
-            setGuest(json.guest);
-            router.push('/home');
+            setGuest(guest);
+
+            // Soft RSVP gate: if they haven't confirmed save-the-date yet,
+            // send them there instead of the homepage. Hard RSVP comes later.
+            if (!guest.stdResponded) {
+                setError('');
+                router.push(`/save-the-date?guest=${guest.id}`);
+            } else {
+                router.push('/home');
+            }
 
         } catch (err: unknown) {
             if (err instanceof Error) {
@@ -68,7 +78,8 @@ export default function LoginPage() {
                 <Image
                     src="/IMG_2960.JPG"
                     alt="Jhoana & Damariel"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                     style={{ objectPosition: 'center 20%' }}
                 />
                 <div

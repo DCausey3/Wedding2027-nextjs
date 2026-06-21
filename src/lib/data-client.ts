@@ -32,7 +32,44 @@ export async function getAllGuests() {
     if (error) throw new Error(error.message);
     return (data ?? []).map(mapGuestRow);
 }
+export async function getGuestByEmail(email: string) {
+    const supabase = await createClient();
 
+    const { data, error } = await supabase
+        .from("guests")
+        .select("*")
+        .ilike("email", email.trim())
+        .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    return data ? mapGuestRow(data) : null;
+}
+
+export async function getGuestByPhone(phone: string) {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from("guests")
+        .select("*")
+        .eq("phone", phone.trim())
+        .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    return data ? mapGuestRow(data) : null;
+}
+
+export async function getGuestById(id: string) {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from("guests")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    return data ? mapGuestRow(data) : null;
+}
 // ── Row mapping: snake_case (DB) → camelCase (app/components) ─────────────────
 function mapGuestRow(row: any) {
     return {

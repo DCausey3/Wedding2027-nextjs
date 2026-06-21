@@ -1,16 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGuestByInvitationCode } from "@/lib/data-client";
+import {
+    getGuestByInvitationCode,
+    getGuestByEmail,
+    getGuestByPhone,
+} from "@/lib/data-client";
 
 export async function GET(req: NextRequest) {
     const code = req.nextUrl.searchParams.get("code");
-    if (!code) {
-        return NextResponse.json({ error: "code is required" }, { status: 400 });
+    const email = req.nextUrl.searchParams.get("email");
+    const phone = req.nextUrl.searchParams.get("phone");
+
+    if (!code && !email && !phone) {
+        return NextResponse.json(
+            { error: "code, email, or phone is required" },
+            { status: 400 }
+        );
     }
 
     try {
-        const guest = await getGuestByInvitationCode(code);
+        let guest = null;
+
+        if (code) {
+            guest = await getGuestByInvitationCode(code);
+        } else if (email) {
+            guest = await getGuestByEmail(email);
+        } else if (phone) {
+            guest = await getGuestByPhone(phone);
+        }
+
         if (!guest) {
-            return NextResponse.json({ error: "Invitation code not found" }, { status: 404 });
+            return NextResponse.json(
+                { error: "Invitation not found. Please verify your details and try again." },
+                { status: 404 }
+            );
         }
 
         return NextResponse.json({
@@ -20,6 +42,9 @@ export async function GET(req: NextRequest) {
                 lastName: guest.lastName,
                 eligibleColombia: guest.eligibleColombia,
                 plusOneAllowed: guest.plusOneAllowed,
+                plusOneCount: guest.plusOneCount,
+                selectedWedding: guest.selectedWedding,
+                stdResponded: guest.stdResponded,
             },
             previousResponse: guest.stdResponded
                 ? {
