@@ -9,6 +9,21 @@ import Image from "next/image";
 
 type LoginMethod = 'code' | 'email' | 'phone';
 
+// Palette — Sky Blue + Apricot + Ivory + Sand
+const COLORS = {
+    navy: '#2c3e4a',       // primary text / dark UI elements
+    navyDeep: '#1f2e38',   // button hover / darkest accents
+    skyBlue: '#A4D4F4',    // accent — links, highlights, italic emphasis
+    apricot: '#FFB482',    // accent — icons, badges, CTA highlights
+    peach: '#FFD6C2',      // soft accent / hover states
+    ivory: '#FFF7EC',      // page background, light text on dark
+    sand: '#E6D2B3',       // secondary backgrounds (pills, inputs)
+    sandLight: '#F2E8D5',  // input backgrounds
+    greenery: '#7FAA6E',   // reserved for success states
+    muted: '#8a9aa5',      // muted/inactive text
+    error: '#d4183d',
+};
+
 export default function LoginPage() {
     const [method, setMethod] = useState<LoginMethod>('code');
     const [value, setValue] = useState('');
@@ -42,11 +57,20 @@ export default function LoginPage() {
             const res = await fetch(url);
             const json = await res.json();
 
+            // DEBUG: inspect the raw API response before anything else touches it.
+            console.log("[Login] full /api/rsvp/lookup response:", json);
+
             if (!res.ok) {
                 throw new Error(json.error ?? 'Invitation not found. Please verify your details and try again.');
             }
 
             const guest = json.guest;
+
+            // DEBUG: confirm the exact field names/values coming back for attendance.
+            console.log("[Login] guest object:", guest);
+            console.log("[Login] guest.stdAttendingColombia:", guest?.stdAttendingColombia, typeof guest?.stdAttendingColombia);
+            console.log("[Login] guest.stdAttendingFlorida:", guest?.stdAttendingFlorida, typeof guest?.stdAttendingFlorida);
+            console.log("[Login] guest.stdResponded:", guest?.stdResponded);
 
             // Sync with your AuthContext state management
             setGuest(guest);
@@ -54,6 +78,8 @@ export default function LoginPage() {
             // Soft RSVP gate: if they haven't confirmed save-the-date yet,
             // send them there instead of the homepage. Hard RSVP comes later.
             sessionStorage.setItem('guest', JSON.stringify(guest));
+            console.log("[Login] wrote to sessionStorage:", sessionStorage.getItem('guest'));
+
             if (!guest.stdResponded) {
                 setError('');
                 router.push(`/save-the-date?guest=${guest.id}`);
@@ -73,11 +99,11 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex" style={{ backgroundColor: '#fdf8f0' }}>
+        <div className="min-h-screen flex" style={{ backgroundColor: COLORS.ivory }}>
             {/* Left panel — image */}
             <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
                 <Image
-                    src="/IMG_2960.JPG"
+                    src="/IMG_8206.jpeg"
                     alt="Jhoana & Damariel"
                     fill
                     className="object-cover"
@@ -85,10 +111,18 @@ export default function LoginPage() {
                 />
                 <div
                     className="absolute inset-0"
-                    style={{ background: 'linear-gradient(to right, rgba(10,7,3,0) 60%, rgba(253,248,240,0.4) 100%)' }}
+                    style={{ background: `linear-gradient(to top, rgba(44,62,74,0.78) 0%, rgba(44,62,74,0) 50%)` }}
                 />
-                <div className="absolute top-1/2 -translate-y-1/2 left-12 right-12">
-                    <p className="uppercase tracking-widest mb-4" style={{ color: '#f5e6c8', fontSize: '0.6rem', letterSpacing: '0.3em' }}>
+                <div className="absolute bottom-16 left-12 right-12">
+                    <p
+                        className="uppercase tracking-widest mb-4"
+                        style={{
+                            color: COLORS.peach,
+                            fontSize: '0.6rem',
+                            letterSpacing: '0.3em',
+                            textShadow: '0 2px 12px rgba(0,0,0,0.5)',
+                        }}
+                    >
                         Welcome
                     </p>
                     <h2
@@ -96,15 +130,21 @@ export default function LoginPage() {
                             fontFamily: "'Cormorant Garamond', serif",
                             fontSize: '3rem',
                             fontWeight: 300,
-                            color: '#fdf8f0',
+                            color: COLORS.ivory,
                             lineHeight: 1.1,
+                            textShadow: '0 2px 12px rgba(0,0,0,0.5)',
                         }}
                     >
                         Your personal
                         <br />
-                        <span style={{ fontStyle: 'italic', color: '#d4a574' }}>wedding portal</span>
+                        <span style={{ fontStyle: 'italic', color: COLORS.skyBlue, textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>
+                            wedding portal
+                        </span>
                     </h2>
-                    <p className="mt-4" style={{ color: 'rgba(253,248,240,0.7)', fontSize: '0.9rem' }}>
+                    <p
+                        className="mt-4"
+                        style={{ color: 'rgba(255,247,236,0.75)', fontSize: '0.9rem', textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}
+                    >
                         Access your personalized invitation, RSVP, and travel details.
                     </p>
                 </div>
@@ -119,9 +159,9 @@ export default function LoginPage() {
                     className="w-full max-w-md"
                 >
                     <div className="flex items-center gap-2 mb-10">
-                        <Heart size={16} style={{ color: '#d4a574', fill: '#d4a574' }} />
-                        <span className="uppercase tracking-widest text-xs" style={{ color: '#1a1209', letterSpacing: '0.2em' }}>
-                            J &amp; D — 2026
+                        <Heart size={16} style={{ color: COLORS.apricot, fill: COLORS.apricot }} />
+                        <span className="uppercase tracking-widest text-xs" style={{ color: COLORS.navy, letterSpacing: '0.2em' }}>
+                            J &amp; D — 2027
                         </span>
                     </div>
 
@@ -130,19 +170,19 @@ export default function LoginPage() {
                             fontFamily: "'Cormorant Garamond', serif",
                             fontSize: '2.75rem',
                             fontWeight: 300,
-                            color: '#1a1209',
+                            color: COLORS.navy,
                             lineHeight: 1.1,
                         }}
                     >
                         Guest Login
                     </h1>
-                    <p>
+                    <p style={{ color: COLORS.muted, fontSize: '0.9rem', marginTop: '0.5rem', marginBottom: '2rem' }}>
                         First time here? Use your invitation code.
-                        Returning guests may sign in with their email or phone number.
+                        Returning guests may sign in with their email, phone number or Invitation Code.
                     </p>
 
                     {/* Method selector */}
-                    <div className="flex rounded-full p-1 mb-8" style={{ backgroundColor: '#f0e8d8' }}>
+                    <div className="flex rounded-full p-1 mb-8" style={{ backgroundColor: COLORS.sand }}>
                         {([['code', 'Invite Code'], ['email', 'Email'], ['phone', 'Phone']] as [LoginMethod, string][]).map(([m, label]) => (
                             <button
                                 key={m}
@@ -150,8 +190,8 @@ export default function LoginPage() {
                                 className="flex-1 py-2 rounded-full text-xs uppercase tracking-widest transition-all"
                                 style={{
                                     letterSpacing: '0.12em',
-                                    backgroundColor: method === m ? '#1a1209' : 'transparent',
-                                    color: method === m ? '#fdf8f0' : '#8a7a65',
+                                    backgroundColor: method === m ? COLORS.navy : 'transparent',
+                                    color: method === m ? COLORS.ivory : COLORS.muted,
                                 }}
                             >
                                 {label}
@@ -170,9 +210,9 @@ export default function LoginPage() {
                         >
                             <div className="relative mb-4">
                                 <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                                    {method === 'code' && <Key size={16} style={{ color: '#d4a574' }} />}
-                                    {method === 'email' && <Mail size={16} style={{ color: '#d4a574' }} />}
-                                    {method === 'phone' && <Phone size={16} style={{ color: '#d4a574' }} />}
+                                    {method === 'code' && <Key size={16} style={{ color: COLORS.apricot }} />}
+                                    {method === 'email' && <Mail size={16} style={{ color: COLORS.apricot }} />}
+                                    {method === 'phone' && <Phone size={16} style={{ color: COLORS.apricot }} />}
                                 </div>
                                 <input
                                     type={method === 'email' ? 'email' : method === 'phone' ? 'tel' : 'text'}
@@ -188,9 +228,9 @@ export default function LoginPage() {
                                     }
                                     className="w-full pl-12 pr-4 py-4 rounded-xl outline-none transition-all"
                                     style={{
-                                        backgroundColor: '#f5ede0',
-                                        border: error ? '1.5px solid #d4183d' : '1.5px solid transparent',
-                                        color: '#1a1209',
+                                        backgroundColor: COLORS.sandLight,
+                                        border: error ? `1.5px solid ${COLORS.error}` : '1.5px solid transparent',
+                                        color: COLORS.navy,
                                         fontSize: '0.9rem',
                                     }}
                                 />
@@ -201,7 +241,7 @@ export default function LoginPage() {
                                     initial={{ opacity: 0, y: -5 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     className="mb-4 text-sm"
-                                    style={{ color: '#d4183d' }}
+                                    style={{ color: COLORS.error }}
                                 >
                                     {error}
                                 </motion.p>
@@ -212,8 +252,8 @@ export default function LoginPage() {
                                 disabled={loading || !value.trim()}
                                 className="w-full py-4 rounded-xl flex items-center justify-center gap-3 text-sm uppercase tracking-widest transition-all hover:opacity-90 disabled:opacity-50"
                                 style={{
-                                    backgroundColor: '#1a1209',
-                                    color: '#fdf8f0',
+                                    backgroundColor: COLORS.navy,
+                                    color: COLORS.ivory,
                                     letterSpacing: '0.15em',
                                 }}
                             >
@@ -230,8 +270,8 @@ export default function LoginPage() {
                     </AnimatePresence>
 
                     <div className="mt-6 flex items-center gap-2">
-                        <Lock size={12} style={{ color: '#c4b49e' }} />
-                        <p className="text-xs" style={{ color: '#c4b49e' }}>
+                        <Lock size={12} style={{ color: COLORS.muted }} />
+                        <p className="text-xs" style={{ color: COLORS.muted }}>
                             Your information is private and secure.
                         </p>
                     </div>

@@ -97,6 +97,7 @@ function mapGuestRow(row: any) {
         plusOneAttending: row.plus_one_attending,
         partyGroupId: row.party_group_id,
         plusOneCount: row.plus_one_count,
+        mailingAddress: row.mailing_address,
     };
 }
 

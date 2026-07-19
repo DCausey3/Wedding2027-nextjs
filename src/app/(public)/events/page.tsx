@@ -97,8 +97,8 @@ export default function EventsPage() {
             <div className="lg:order-2">
               <p className="label-overline text-usa-emerald mb-3">USA Wedding</p>
               <h2 id="usa-heading" className="heading-section text-dark mb-4">
-                Miami,{" "}
-                <span className="italic text-usa-emerald">Florida</span>
+                Fort Worth,{" "}
+                <span className="italic text-usa-emerald">Texas</span>
               </h2>
               <div className="space-y-2 mb-8">
                 {[

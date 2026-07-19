@@ -5,7 +5,7 @@ import { getGuestById } from "@/lib/data-client";
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { guestId, attending, headcount, phone, email, smsConsent, declineNote } = body;
+        const { guestId, attending, attendingWeddings, headcount, phone, email, smsConsent, declineNote } = body;
 
         if (!guestId || typeof attending !== "boolean") {
             return NextResponse.json(
@@ -13,6 +13,14 @@ export async function POST(req: NextRequest) {
                 { status: 400 }
             );
         }
+
+        // attendingWeddings is the source of truth for which specific wedding(s)
+        // the guest actually picked (e.g. ["Colombia"], ["USA"], ["Colombia","USA"],
+        // or [] when declining). Don't re-derive this from guest.selectedWedding —
+        // that only tells you what they were ELIGIBLE for, not what they chose.
+        const weddingKeys: string[] = Array.isArray(attendingWeddings) ? attendingWeddings : [];
+        const wantsColombia = attending && weddingKeys.includes("Colombia");
+        const wantsFlorida = attending && weddingKeys.includes("USA"); // NOTE: DB column stays "florida" — this is the Texas/Fort Worth wedding, we're just not renaming the column.
 
         const guest = await getGuestById(guestId);
         if (!guest) {
@@ -36,14 +44,9 @@ export async function POST(req: NextRequest) {
 
         const updates: Record<string, any> = {
             std_responded: true,
-            std_attending_colombia: attending && guest.selectedWedding === "Colombia",
-            std_attending_florida: attending && guest.selectedWedding === "USA",
+            std_attending_colombia: wantsColombia,
+            std_attending_florida: wantsFlorida,
         };
-
-        if (guest.selectedWedding === "Both") {
-            updates.std_attending_colombia = attending;
-            updates.std_attending_florida = attending;
-        }
 
         updates.plus_one_count = safeHeadcount;
         updates.plus_one_attending = safeHeadcount > 1;

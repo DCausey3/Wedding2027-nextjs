@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export type GuestType = 'colombia-only' | 'florida-only' | 'both' | 'choose-one' | 'bridal-party';
 
@@ -25,6 +25,7 @@ interface AuthContextValue {
     setGuest: (guest: GuestData | null) => void;
     isAdmin: boolean;
     setIsAdmin: (v: boolean) => void;
+    loaded: boolean; // true once we've checked sessionStorage on mount
 }
 
 export const AuthContext = createContext<AuthContextValue>({
@@ -32,14 +33,42 @@ export const AuthContext = createContext<AuthContextValue>({
     setGuest: () => {},
     isAdmin: false,
     setIsAdmin: () => {},
+    loaded: false,
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [guest, setGuest] = useState<GuestData | null>(null);
+    const [guest, setGuestState] = useState<GuestData | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [loaded, setLoaded] = useState(false);
+
+    // Rehydrate guest session on mount (e.g. after a page refresh) so
+    // Navbar/Footer/pages don't briefly think the guest is logged out.
+    useEffect(() => {
+        const stored = sessionStorage.getItem('guest');
+        if (stored) {
+            try {
+                setGuestState(JSON.parse(stored));
+            } catch {
+                // ignore malformed storage
+            }
+        }
+        setLoaded(true);
+    }, []);
+
+    // Keep sessionStorage in sync whenever guest changes via setGuest,
+    // so login page's manual sessionStorage.setItem becomes redundant
+    // (safe to leave in place, this just guards other callers).
+    const setGuest = (g: GuestData | null) => {
+        setGuestState(g);
+        if (g) {
+            sessionStorage.setItem('guest', JSON.stringify(g));
+        } else {
+            sessionStorage.removeItem('guest');
+        }
+    };
 
     return (
-        <AuthContext.Provider value={{ guest, setGuest, isAdmin, setIsAdmin }}>
+        <AuthContext.Provider value={{ guest, setGuest, isAdmin, setIsAdmin, loaded }}>
             {children}
         </AuthContext.Provider>
     );

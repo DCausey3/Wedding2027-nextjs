@@ -4,28 +4,80 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useScroll, useTransform } from "motion/react";
-import { ArrowDown, MapPin, Calendar } from "lucide-react";
+import { ArrowDown, MapPin, Calendar, Gift, Mail } from "lucide-react";
 import { CountdownTimer } from "../../components/ui/CountdownTimer";
 import { WEDDING_DATES } from "../../lib/utils";
 
-// ─── Personalized welcome banner ──────────────────────────────────────────────
-// Reads the guest set in sessionStorage by the login/save-the-date flow.
-// No persistent session — only shows if they arrived here in the same browser tab.
-function WelcomeBanner() {
-    const [name, setName] = useState<string | null>(null);
+// ─── Palette — Sky Blue + Apricot + Ivory + Sand ───────────────────────────
+const SKY_DEEP = "#123B54"; // deep shade of the sky-blue hue — replaces navy everywhere
+const IVORY = "#FFF7EC";
+const SAND = "#E6D2B3";
+const SAND_LIGHT = "#F2E8D5";
+const APRICOT = "#FFB482";
+const PEACH = "#FFE4CB";
+const SKY = "#A4D4F4";
+const SKY_MID = "#5FA8D3"; // mid accent — icons, secondary labels
+const GREENERY = "#7FAA6E";
+const GREENERY_DARK = "#4d6b43"; // higher-contrast variant of GREENERY for text on light bg
+
+// ─── Shared guest hook ─────────────────────────────────────────────────────
+// Attendance now comes straight from Supabase (std_attending_colombia /
+// std_attending_florida) instead of a single "selectedWedding" choice.
+// NOTE: the API route maps these snake_case DB columns to camelCase
+// (stdAttendingColombia / stdAttendingFlorida) before they ever reach the
+// client — the guest object in sessionStorage uses the camelCase names.
+type Guest = {
+    firstName?: string;
+    plusOneCount?: number;
+    email?: string;
+    phone?: string;
+    stdAttendingColombia?: boolean;
+    stdAttendingFlorida?: boolean;
+};
+
+function useGuest() {
+    const [guest, setGuest] = useState<Guest | null>(null);
+    const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
         const stored = sessionStorage.getItem("guest");
         if (stored) {
             try {
                 const parsed = JSON.parse(stored);
-                if (parsed.firstName) setName(parsed.firstName);
-            } catch {
-                // ignore malformed storage
+                setGuest(parsed);
+            } catch (e) {
+                console.error("[useGuest] failed to parse guest JSON:", e);
             }
         }
+        setLoaded(true);
     }, []);
 
+    return { guest, loaded };
+}
+
+// ─── Attendance helper ──────────────────────────────────────────────────────
+// Supabase can hand these back as real booleans OR as strings ("TRUE"/"FALSE"/
+// "true"/"false") depending on the column type and how the API route
+// serializes them, so normalize defensively instead of a strict `=== true`.
+function isTruthy(value: unknown): boolean {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") return value.trim().toLowerCase() === "true";
+    return false;
+}
+
+function useAttendance(guest: Guest | null) {
+    const attendingColombia = isTruthy(guest?.stdAttendingColombia);
+    const attendingFlorida = isTruthy(guest?.stdAttendingFlorida);
+    const attendingBoth = attendingColombia && attendingFlorida;
+    const attendingNeither = !attendingColombia && !attendingFlorida;
+    return { attendingColombia, attendingFlorida, attendingBoth, attendingNeither };
+}
+
+// ─── Personalized welcome banner ──────────────────────────────────────────
+// Navbar is `fixed top-0`, so it doesn't occupy flow space — without an
+// offset here, this banner renders at y=0 and sits directly underneath it.
+// h-16 (64px) matches the Navbar's fixed height.
+function WelcomeBanner({ name }: { name?: string | null }) {
     if (!name) return null;
 
     return (
@@ -34,183 +86,238 @@ function WelcomeBanner() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="relative z-20 w-full py-3 px-6 text-center"
-            style={{ backgroundColor: "#1a1209", borderBottom: "1px solid rgba(212,165,116,0.25)" }}
+            style={{ backgroundColor: SKY_DEEP, borderBottom: "1px solid rgba(255,180,130,0.25)", marginTop: "4rem" }}
         >
-            <p className="text-xs uppercase tracking-[0.15em]" style={{ color: "#f5e6c8" }}>
+            <p className="text-xs uppercase tracking-[0.15em]" style={{ color: PEACH }}>
                 Welcome back, {name}! We&apos;re so glad you&apos;re here.
             </p>
         </motion.div>
     );
 }
 
-// ─── Hero with parallax ────────────────────────────────────────────────────────
-function HeroSection() {
+// ─── Hero with parallax ─────────────────────────────────────────────────────
+function HeroSection({
+                         attendingColombia,
+                         attendingFlorida,
+                         attendingBoth,
+                     }: {
+    attendingColombia: boolean;
+    attendingFlorida: boolean;
+    attendingBoth: boolean;
+}) {
     const ref = useRef<HTMLDivElement>(null);
     const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
     const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
     const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
+    // If they're only attending Florida, lead with that countdown.
+    // Otherwise (Colombia only, both, or undecided) lead with Colombia since it's earlier.
+    const heroCountdown =
+        attendingFlorida && !attendingColombia
+            ? { date: WEDDING_DATES.usa, label: "Texas — April 30, 2027" }
+            : { date: WEDDING_DATES.colombia, label: "Colombia — June 12, 2027" };
+
     return (
-        <div ref={ref} className="relative h-screen min-h-[680px] flex items-center justify-center overflow-hidden">
-            <motion.div className="absolute inset-0 overflow-hidden" style={{ y }}>
+        <div ref={ref} className="relative h-screen min-h-[680px] overflow-hidden">
+            <motion.div className="absolute inset-0 overflow-hidden" style={{ y, backgroundColor: SKY_DEEP }}>
                 <Image
-                    src="/IMG_2961.JPG"
+                    src="/dip.JPG"
                     alt="Jhoana & Damariel engagement"
                     fill
                     priority
                     className="object-cover"
-                    style={{ objectPosition: "center 20%" }}
+                    style={{ objectPosition: "center 80%" }}
                 />
+                {/* Lighter overlay, concentrated at the bottom/left for text legibility — keeps the photo the focal point */}
                 <div
                     className="absolute inset-0"
                     style={{
                         background:
-                            "linear-gradient(to bottom, rgba(10,7,3,0.35) 0%, rgba(10,7,3,0.15) 40%, rgba(10,7,3,0.6) 100%)",
+                            "linear-gradient(to bottom, rgba(18,59,84,0.12) 0%, rgba(18,59,84,0.02) 35%, rgba(18,59,84,0.55) 100%)",
+                    }}
+                />
+                <div
+                    className="absolute inset-0"
+                    style={{
+                        background: "linear-gradient(to right, rgba(18,59,84,0.45) 0%, rgba(18,59,84,0) 55%)",
                     }}
                 />
             </motion.div>
 
-            <motion.div style={{ opacity }} className="relative z-10 flex flex-col items-center text-center px-6 max-w-3xl">
+            {/* Mobile: full-width countdown bar pinned under the top of the hero — grid instead of scroll so both fit without clipping */}
+            <motion.div
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9, duration: 0.6 }}
+                className="sm:hidden absolute top-4 inset-x-3 z-20"
+            >
+                <div
+                    className="rounded-2xl px-3 py-3 backdrop-blur-md"
+                    style={{ backgroundColor: "rgba(18,59,84,0.55)", border: "1px solid rgba(255,247,236,0.15)" }}
+                >
+                    {attendingBoth ? (
+                        <div className="grid grid-cols-2 divide-x" style={{ borderColor: "rgba(255,247,236,0.2)" }}>
+                            <div className="flex justify-center min-w-0">
+                                <CountdownTimer
+                                    targetDate={WEDDING_DATES.colombia}
+                                    label="Colombia"
+                                    textColor={IVORY}
+                                    accentColor={SKY}
+                                    size="sm"
+                                    showSeconds={false}
+                                />
+                            </div>
+                            <div className="flex justify-center min-w-0">
+                                <CountdownTimer
+                                    targetDate={WEDDING_DATES.usa}
+                                    label="Texas"
+                                    textColor={IVORY}
+                                    accentColor={APRICOT}
+                                    size="sm"
+                                    showSeconds={false}
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex justify-center">
+                            <CountdownTimer
+                                targetDate={heroCountdown.date}
+                                label={heroCountdown.label}
+                                textColor={IVORY}
+                                accentColor={APRICOT}
+                                size="sm"
+                                showSeconds={false}
+                            />
+                        </div>
+                    )}
+                </div>
+            </motion.div>
+
+            {/* Title block — slides in from the left, anchored lower on the frame */}
+            <motion.div style={{ opacity }} className="relative z-10 h-full flex flex-col justify-end px-5 sm:px-12 pb-14 sm:pb-40 max-w-3xl">
                 <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.8 }}
-                    className="uppercase tracking-widest mb-6"
-                    style={{ color: "#f5e6c8", fontSize: "0.65rem", letterSpacing: "0.3em" }}
+                    initial={{ opacity: 0, x: -40 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3, duration: 0.9, ease: "easeOut" }}
+                    className="uppercase tracking-widest mb-4"
+                    style={{ color: PEACH, fontSize: "0.65rem", letterSpacing: "0.3em" }}
                 >
                     We&apos;re getting married
                 </motion.p>
 
                 <motion.h1
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 1 }}
+                    initial={{ opacity: 0, x: -60 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
                     style={{
                         fontFamily: "'Cormorant Garamond', serif",
-                        fontSize: "clamp(3.5rem, 10vw, 7rem)",
+                        fontSize: "clamp(2.4rem, 11vw, 6rem)",
                         fontWeight: 300,
-                        color: "#fdf8f0",
+                        color: IVORY,
                         lineHeight: 1.05,
                         letterSpacing: "-0.01em",
                     }}
                 >
                     Jhoana
                     <br />
-                    <span style={{ fontStyle: "italic", color: "#f5e6c8" }}>&amp; Damariel</span>
+                    <span style={{ fontStyle: "italic", color: PEACH }}>&amp; Damariel</span>
                 </motion.h1>
 
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.9, duration: 0.8 }}
-                    className="my-8 flex items-center gap-4"
+                    initial={{ opacity: 0, x: -40 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.75, duration: 0.9, ease: "easeOut" }}
+                    className="mt-6 flex items-center gap-4"
                 >
-                    <div className="h-px w-12" style={{ backgroundColor: "#d4a574" }} />
-                    <p className="uppercase tracking-widest" style={{ color: "#f5e6c8", fontSize: "0.65rem", letterSpacing: "0.25em" }}>
-                        Two Celebrations, One Love Story
+                    <div className="h-px w-12" style={{ backgroundColor: APRICOT }} />
+                    <p className="uppercase tracking-widest" style={{ color: PEACH, fontSize: "0.65rem", letterSpacing: "0.25em" }}>
+                        {attendingBoth ? "Two Celebrations, One Love Story" : "Join Us For Our Celebration"}
                     </p>
-                    <div className="h-px w-12" style={{ backgroundColor: "#d4a574" }} />
                 </motion.div>
 
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1.1, duration: 0.8 }}
-                    className="mb-10"
-                >
-                    <CountdownTimer
-                        targetDate={WEDDING_DATES.colombia}
-                        label="Colombia — June 12, 2027"
-                        textColor="#fdf8f0"
-                        accentColor="#d4a574"
-                        size="lg"
-                    />
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1.3, duration: 0.8 }}
-                    className="flex flex-col sm:flex-row gap-4"
+                    initial={{ opacity: 0, x: -40 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.95, duration: 0.9, ease: "easeOut" }}
+                    className="mt-8"
                 >
                     <Link
-                        href="/login"
-                        className="px-8 py-3 rounded-full text-xs tracking-widest uppercase transition-all hover:opacity-90"
-                        style={{ backgroundColor: "#d4a574", color: "#fff", letterSpacing: "0.2em" }}
+                        href="/rsvp"
+                        className="inline-block px-8 py-3 rounded-full text-xs tracking-widest uppercase transition-all hover:opacity-90"
+                        style={{ backgroundColor: APRICOT, color: SKY_DEEP, letterSpacing: "0.2em" }}
                     >
                         View Invitation
                     </Link>
-
                 </motion.div>
+            </motion.div>
+
+            {/* Countdown — compact card tucked into the bottom-right corner on larger screens; mobile uses the top bar above instead */}
+            <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2, duration: 0.8 }}
+                className="hidden sm:block absolute bottom-8 right-8 z-10"
+            >
+                {attendingBoth ? (
+                    <div className="flex flex-col gap-3">
+                        <div
+                            className="rounded-2xl px-5 py-4 backdrop-blur-md"
+                            style={{ backgroundColor: "rgba(18,59,84,0.55)", border: "1px solid rgba(255,247,236,0.15)" }}
+                        >
+                            <CountdownTimer
+                                targetDate={WEDDING_DATES.colombia}
+                                label="Colombia — June 12, 2027"
+                                textColor={IVORY}
+                                accentColor={SKY}
+                                size="sm"
+                            />
+                        </div>
+                        <div
+                            className="rounded-2xl px-5 py-4 backdrop-blur-md"
+                            style={{ backgroundColor: "rgba(18,59,84,0.55)", border: "1px solid rgba(255,247,236,0.15)" }}
+                        >
+                            <CountdownTimer
+                                targetDate={WEDDING_DATES.usa}
+                                label="Texas — April 30, 2027"
+                                textColor={IVORY}
+                                accentColor={APRICOT}
+                                size="sm"
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    <div
+                        className="rounded-2xl px-6 py-5 backdrop-blur-md"
+                        style={{ backgroundColor: "rgba(18,59,84,0.55)", border: "1px solid rgba(255,247,236,0.15)" }}
+                    >
+                        <CountdownTimer
+                            targetDate={heroCountdown.date}
+                            label={heroCountdown.label}
+                            textColor={IVORY}
+                            accentColor={APRICOT}
+                            size="md"
+                        />
+                    </div>
+                )}
             </motion.div>
 
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 2, duration: 1 }}
-                className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+                className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
             >
                 <motion.div animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}>
-                    <ArrowDown size={16} style={{ color: "#d4a574" }} />
+                    <ArrowDown size={16} style={{ color: APRICOT }} />
                 </motion.div>
             </motion.div>
         </div>
     );
 }
 
-// ─── Wedding destination card ──────────────────────────────────────────────────
-function WeddingCard({
-                         title, date, location, image, accentColor, bgGradient, linkTo, delay = 0,
-                     }: {
-    title: string; date: string; location: string; image: string;
-    accentColor: string; bgGradient: string; linkTo: string; delay?: number;
-}) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay }}
-            whileHover={{ y: -6 }}
-            className="relative overflow-hidden rounded-2xl group"
-            style={{ aspectRatio: "3/4" }}
-        >
-            <Image
-                src={image}
-                alt={title}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, 50vw"
-            />
-            <div className="absolute inset-0" style={{ background: bgGradient }} />
-            <div className="absolute inset-0 flex flex-col justify-end p-8">
-                <p className="uppercase tracking-widest mb-2" style={{ color: accentColor, fontSize: "0.6rem", letterSpacing: "0.25em" }}>
-                    {date}
-                </p>
-                <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontWeight: 400, color: "#fdf8f0", lineHeight: 1.1 }}>
-                    {title}
-                </h3>
-                <div className="flex items-center gap-2 mt-3">
-                    <MapPin size={12} style={{ color: accentColor }} />
-                    <p className="text-xs" style={{ color: "rgba(253,248,240,0.7)" }}>{location}</p>
-                </div>
-                <Link
-                    href={linkTo}
-                    className="mt-6 inline-flex items-center gap-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-70"
-                    style={{ color: "#fdf8f0", letterSpacing: "0.15em" }}
-                >
-                    Explore
-                    <div className="h-px w-8" style={{ backgroundColor: accentColor }} />
-                </Link>
-            </div>
-        </motion.div>
-    );
-}
-
-// ─── Our Story ─────────────────────────────────────────────────────────────────
 function OurStorySection() {
     return (
-        <section id="story" className="py-28 px-6" style={{ backgroundColor: "#fdf8f0" }}>
+        <section id="story" className="py-28 px-6" style={{ backgroundColor: IVORY }}>
             <div className="max-w-6xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -219,10 +326,10 @@ function OurStorySection() {
                     transition={{ duration: 0.8 }}
                     className="text-center mb-20"
                 >
-                    <p className="uppercase tracking-widest mb-4" style={{ color: "#d4a574", fontSize: "0.6rem", letterSpacing: "0.3em" }}>
+                    <p className="uppercase tracking-widest mb-4" style={{ color: APRICOT, fontSize: "0.6rem", letterSpacing: "0.3em" }}>
                         Our Journey
                     </p>
-                    <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 300, color: "#1a1209", lineHeight: 1.1 }}>
+                    <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 300, color: SKY_DEEP, lineHeight: 1.1 }}>
                         The Story So Far
                     </h2>
                 </motion.div>
@@ -244,9 +351,9 @@ function OurStorySection() {
                                 style={{ objectPosition: "center 30%" }}
                             />
                         </div>
-                        <div className="absolute -bottom-4 -right-4 rounded-xl px-6 py-4" style={{ backgroundColor: "#d4a574", color: "#fff" }}>
+                        <div className="absolute -bottom-4 -right-4 rounded-xl px-6 py-4" style={{ backgroundColor: APRICOT, color: SKY_DEEP }}>
                             <p className="uppercase tracking-widest" style={{ fontSize: "0.55rem", letterSpacing: "0.2em" }}>The Proposal</p>
-                            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.25rem", fontWeight: 400 }}>Summer 2024</p>
+                            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.25rem", fontWeight: 400 }}>Spring 2026</p>
                         </div>
                     </motion.div>
 
@@ -257,24 +364,90 @@ function OurStorySection() {
                         transition={{ duration: 0.9 }}
                         className="flex flex-col gap-6"
                     >
-                        <p className="uppercase tracking-widest" style={{ color: "#d4a574", fontSize: "0.6rem", letterSpacing: "0.25em" }}>
-                            Chapter One
+                        <p
+                            className="uppercase tracking-widest"
+                            style={{
+                                color: APRICOT,
+                                fontSize: "0.6rem",
+                                letterSpacing: "0.25em",
+                            }}
+                        >
+                            How It All Began
                         </p>
-                        <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2.25rem", fontWeight: 300, color: "#1a1209", lineHeight: 1.15 }}>
-                            He got down on one knee
+
+                        <h3
+                            style={{
+                                fontFamily: "'Cormorant Garamond', serif",
+                                fontSize: "2.25rem",
+                                fontWeight: 300,
+                                color: SKY_DEEP,
+                                lineHeight: 1.15,
+                            }}
+                        >
+                            One Swipe Changed Everything
                         </h3>
-                        <p className="leading-relaxed" style={{ color: "#5a4a35", fontSize: "0.95rem" }}>
-                            On a warm summer afternoon in a beautiful garden, surrounded by blooming flowers and the gentle rustling of leaves, Damariel asked Jhoana to be his forever. With trembling hands and happy tears, she said yes.
+
+                        <p
+                            className="leading-relaxed"
+                            style={{ color: SKY_DEEP, opacity: 0.75, fontSize: "0.95rem" }}
+                        >
+                            What started as a simple match on Hinge quickly became something neither of
+                            us expected. After days of talking and countless conversations, we met for
+                            our first date over loaded fries at Flippin' Fries Factory. Damariel was so
+                            nervous he barely ate—but everything changed when they discovered they both
+                            loved the <em>Fast &amp; Furious</em> movies.
                         </p>
-                        <p className="leading-relaxed" style={{ color: "#5a4a35", fontSize: "0.95rem" }}>
-                            Their love story spans two continents — rooted in the warmth of Colombia and flourishing in the sunshine of Florida. Now they&apos;re ready to celebrate with everyone they love, twice over.
+
+                        <p
+                            className="leading-relaxed"
+                            style={{ color: SKY_DEEP, opacity: 0.75, fontSize: "0.95rem" }}
+                        >
+                            That lunch date turned into an entire day together, and before long we
+                            became each other's biggest supporters. Through college, career changes,
+                            medical school dreams, and a move to Texas, our relationship continued to
+                            grow stronger with every new adventure.
                         </p>
-                        <div className="h-px" style={{ backgroundColor: "#e8dcc8" }} />
+
+                        <p
+                            className="leading-relaxed"
+                            style={{ color: SKY_DEEP, opacity: 0.75, fontSize: "0.95rem" }}
+                        >
+                            After months of planning, Damariel surprised Jhoana with a date at the
+                            Dallas Arboretum and Botanical Garden. Surrounded by beautiful gardens and
+                            hidden behind the lens of a photographer, he got down on one knee and asked
+                            her to spend forever with him. She said <strong>yes</strong>.
+                        </p>
+
+                        <div className="h-px" style={{ backgroundColor: SAND }} />
+
                         <div className="flex gap-8">
-                            {[["2", "Weddings"], ["2", "Countries"], ["∞", "Love"]].map(([num, label]) => (
+                            {[
+                                ["1", "First Date"],
+                                ["2", "Celebrations"],
+                                ["∞", "Forever"],
+                            ].map(([num, label]) => (
                                 <div key={label}>
-                                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", color: "#d4a574", fontWeight: 300 }}>{num}</p>
-                                    <p className="uppercase tracking-widest" style={{ fontSize: "0.55rem", color: "#8a7a65", letterSpacing: "0.15em" }}>{label}</p>
+                                    <p
+                                        style={{
+                                            fontFamily: "'Cormorant Garamond', serif",
+                                            fontSize: "2rem",
+                                            color: APRICOT,
+                                            fontWeight: 300,
+                                        }}
+                                    >
+                                        {num}
+                                    </p>
+                                    <p
+                                        className="uppercase tracking-widest"
+                                        style={{
+                                            fontSize: "0.55rem",
+                                            color: SKY_DEEP,
+                                            opacity: 0.6,
+                                            letterSpacing: "0.15em",
+                                        }}
+                                    >
+                                        {label}
+                                    </p>
                                 </div>
                             ))}
                         </div>
@@ -312,15 +485,169 @@ function OurStorySection() {
                         />
                     </motion.div>
                 </div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7, delay: 0.2 }}
+                    className="flex justify-center mt-14"
+                >
+                    <Link
+                        href="/our-story"
+                        className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-xs uppercase tracking-widest transition-all hover:opacity-90"
+                        style={{ backgroundColor: SKY_DEEP, color: IVORY, letterSpacing: "0.2em" }}
+                    >
+                        Read Our Full Story
+                        <span aria-hidden="true">→</span>
+                    </Link>
+                </motion.div>
             </div>
         </section>
     );
 }
 
-// ─── Weddings ──────────────────────────────────────────────────────────────────
-function WeddingsSection() {
+// ─── Wedding destination card ───────────────────────────────────────────────
+function WeddingCard({
+                         title, date, location, image, accentColor, bgGradient, linkTo, delay = 0,
+                     }: {
+    title: string; date: string; location: string; image: string;
+    accentColor: string; bgGradient: string; linkTo: string; delay?: number;
+}) {
     return (
-        <section className="py-24 px-6" style={{ backgroundColor: "#f5ede0" }}>
+        <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay }}
+            whileHover={{ y: -6 }}
+            className="relative overflow-hidden rounded-2xl group"
+            style={{ aspectRatio: "3/4" }}
+        >
+            <Image
+                src={image}
+                alt={title}
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                sizes="(max-width: 768px) 100vw, 50vw"
+            />
+            <div className="absolute inset-0" style={{ background: bgGradient }} />
+            <div className="absolute inset-0 flex flex-col justify-end p-8">
+                <p className="uppercase tracking-widest mb-2" style={{ color: accentColor, fontSize: "0.6rem", letterSpacing: "0.25em" }}>
+                    {date}
+                </p>
+                <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontWeight: 400, color: IVORY, lineHeight: 1.1 }}>
+                    {title}
+                </h3>
+                <div className="flex items-center gap-2 mt-3">
+                    <MapPin size={12} style={{ color: accentColor }} />
+                    <p className="text-xs" style={{ color: "rgba(255,247,236,0.7)" }}>{location}</p>
+                </div>
+                <Link
+                    href={linkTo}
+                    className="mt-6 inline-flex items-center gap-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-70"
+                    style={{ color: IVORY, letterSpacing: "0.15em" }}
+                >
+                    Explore
+                    <div className="h-px w-8" style={{ backgroundColor: accentColor }} />
+                </Link>
+            </div>
+        </motion.div>
+    );
+}
+
+// ─── Inline countdown card (paired with each WeddingCard below the grid) ───
+function WeddingCountdownCard({
+                                  label, place, date, targetDate, accentColor, accentColorDark, bgTint, borderTint, delay = 0,
+                              }: {
+    label: string; place: string; date: string; targetDate: Date | string;
+    accentColor: string; accentColorDark: string; bgTint: string; borderTint: string; delay?: number;
+}) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay }}
+            className="flex flex-col items-center text-center p-8 rounded-2xl"
+            style={{ backgroundColor: bgTint, border: `1px solid ${borderTint}` }}
+        >
+            <p className="uppercase tracking-widest mb-2" style={{ color: accentColorDark, fontSize: "0.55rem", letterSpacing: "0.25em" }}>
+                {label}
+            </p>
+            <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem", fontWeight: 400, color: accentColorDark }}>
+                {place}
+            </h3>
+            <div className="flex items-center gap-2 mt-2 mb-6">
+                <Calendar size={12} style={{ color: accentColor }} />
+                <p className="text-xs" style={{ color: SKY_DEEP, opacity: 0.7 }}>{date}</p>
+            </div>
+            <CountdownTimer targetDate={targetDate} textColor={accentColorDark} accentColor={accentColor} size="md" />
+        </motion.div>
+    );
+}
+
+// ─── "Not attending either" fallback card ──────────────────────────────────
+function NoAttendanceNotice() {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="max-w-xl mx-auto text-center rounded-2xl px-8 py-12"
+            style={{ backgroundColor: IVORY, border: `1px solid ${SAND}` }}
+        >
+            <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.85rem", fontWeight: 400, color: SKY_DEEP }}>
+                We&apos;ll miss you there
+            </h3>
+            <p className="mt-4 leading-relaxed" style={{ color: SKY_DEEP, opacity: 0.7, fontSize: "0.9rem" }}>
+                It looks like you&apos;re not able to join us in Colombia or Florida right now — we understand, and we&apos;re
+                so grateful you&apos;re still part of our story. If you&apos;d like to celebrate with us from afar, you&apos;re
+                welcome to visit our registry.
+            </p>
+            <p className="mt-3 leading-relaxed" style={{ color: SKY_DEEP, opacity: 0.7, fontSize: "0.9rem" }}>
+                And if anything changes, just let us know — we can always update your RSVP.
+            </p>
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link
+                    href="/registry"
+                    className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-xs tracking-widest uppercase transition-all hover:opacity-90"
+                    style={{ backgroundColor: APRICOT, color: SKY_DEEP, letterSpacing: "0.2em" }}
+                >
+                    <Gift size={14} />
+                    View Registry
+                </Link>
+                <Link
+                    href="/rsvp"
+                    className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-xs tracking-widest uppercase transition-all hover:opacity-70"
+                    style={{ border: `1px solid ${APRICOT}`, color: SKY_DEEP, letterSpacing: "0.2em" }}
+                >
+                    <Mail size={14} />
+                    Update RSVP
+                </Link>
+            </div>
+        </motion.div>
+    );
+}
+
+// ─── Weddings + Countdown (merged) ─────────────────────────────────────────
+// Combines what used to be two separate sections (destination cards, then a
+// countdown strip below) into one section: destination cards up top, matching
+// countdowns for the same weddings directly beneath — one heading, one flow.
+function WeddingsSection({
+                             attendingColombia,
+                             attendingFlorida,
+                             attendingBoth,
+                             attendingNeither,
+                         }: {
+    attendingColombia: boolean;
+    attendingFlorida: boolean;
+    attendingBoth: boolean;
+    attendingNeither: boolean;
+}) {
+    return (
+        <section className="py-24 px-6" style={{ backgroundColor: SAND }}>
             <div className="max-w-6xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -329,106 +656,142 @@ function WeddingsSection() {
                     transition={{ duration: 0.8 }}
                     className="text-center mb-16"
                 >
-                    <p className="uppercase tracking-widest mb-4" style={{ color: "#d4a574", fontSize: "0.6rem", letterSpacing: "0.3em" }}>
-                        Two Celebrations
+                    <p className="uppercase tracking-widest mb-4" style={{ color: APRICOT, fontSize: "0.6rem", letterSpacing: "0.3em" }}>
+                        {attendingBoth ? "Two Celebrations" : "Our Celebration"}
                     </p>
-                    <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 300, color: "#1a1209", lineHeight: 1.1 }}>
-                        Choose Your Adventure
+                    <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 300, color: SKY_DEEP, lineHeight: 1.1 }}>
+                        {attendingNeither ? "Celebrating With You, From Anywhere" : "You're Invited"}
                     </h2>
-                    <p className="mt-4 max-w-md mx-auto" style={{ color: "#5a4a35", fontSize: "0.9rem" }}>
-                        Two weddings, two countries, one unforgettable love story. We can&apos;t wait to celebrate with you.
-                    </p>
+                    {!attendingNeither && (
+                        <p className="mt-4 max-w-md mx-auto" style={{ color: SKY_DEEP, opacity: 0.7, fontSize: "0.9rem" }}>
+                            {attendingBoth
+                                ? "Two weddings, two countries, one unforgettable love story. We can't wait to celebrate with you. Here are the details for our big day."
+                                : "We can't wait to celebrate with you. Here are the details for our big day."}
+                        </p>
+                    )}
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-                    <WeddingCard
-                        title="Colombia Wedding"
-                        date="November 7, 2026"
-                        location="Pereira, Colombia"
-                        image="https://images.unsplash.com/photo-1643068730310-e8cff093b7ab?w=1080&q=80"
-                        accentColor="#2dd4bf"
-                        bgGradient="linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0) 100%)"
-                        linkTo="/colombia"
-                        delay={0.1}
-                    />
-                    <WeddingCard
-                        title="Florida Wedding"
-                        date="December 12, 2026"
-                        location="Miami, Florida"
-                        image="https://images.unsplash.com/photo-1719008682128-5ebdbc7ccfab?w=1080&q=80"
-                        accentColor="#34d399"
-                        bgGradient="linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0) 100%)"
-                        linkTo="/florida"
-                        delay={0.25}
-                    />
-                </div>
+                {attendingNeither ? (
+                    <NoAttendanceNotice />
+                ) : (
+                    <>
+                        {/* Destination cards */}
+                        <div
+                            className={`grid grid-cols-1 gap-6 mx-auto mb-16 ${
+                                attendingColombia && attendingFlorida ? "md:grid-cols-2 max-w-3xl" : "max-w-md"
+                            }`}
+                        >
+                            {attendingColombia && (
+                                <WeddingCard
+                                    title="Colombia Wedding"
+                                    date="June 12, 2027"
+                                    location="Colombia"
+                                    image="https://images.unsplash.com/photo-1643068730310-e8cff093b7ab?w=1080&q=80"
+                                    accentColor={SKY}
+                                    bgGradient="linear-gradient(to top, rgba(18,59,84,0.75) 0%, rgba(18,59,84,0.2) 50%, rgba(18,59,84,0) 100%)"
+                                    linkTo="/colombia"
+                                    delay={0.1}
+                                />
+                            )}
+                            {attendingFlorida && (
+                                <WeddingCard
+                                    title="Marty Leonard Chapel"
+                                    date="April 30, 2027"
+                                    location="Fort Worth, Texas"
+                                    image="/MartyL.jpeg"
+                                    accentColor={GREENERY}
+                                    bgGradient="linear-gradient(to top, rgba(18,59,84,0.78) 0%, rgba(18,59,84,0.18) 55%, rgba(18,59,84,0) 100%)"
+                                    linkTo="/texas"
+                                    delay={0.25}
+                                />
+                            )}
+                        </div>
+
+                        {/* Matching countdowns, same section, no repeated heading */}
+                        <div
+                            className={`grid grid-cols-1 gap-8 ${
+                                attendingColombia && attendingFlorida ? "md:grid-cols-2" : "max-w-sm mx-auto"
+                            }`}
+                        >
+                            {attendingColombia && (
+                                <WeddingCountdownCard
+                                    label="Colombia"
+                                    place="Pereira, Colombia"
+                                    date="June 12, 2027"
+                                    targetDate={WEDDING_DATES.colombia}
+                                    accentColor={SKY}
+                                    accentColorDark={SKY_MID}
+                                    bgTint={`${SKY}18`}
+                                    borderTint={`${SKY}55`}
+                                    delay={0.1}
+                                />
+                            )}
+                            {attendingFlorida && (
+                                <WeddingCountdownCard
+                                    label="Texas"
+                                    place="Fort Worth, Texas"
+                                    date="April 30, 2027"
+                                    targetDate={WEDDING_DATES.usa}
+                                    accentColor={GREENERY}
+                                    accentColorDark={GREENERY_DARK}
+                                    bgTint={`${GREENERY}18`}
+                                    borderTint={`${GREENERY}55`}
+                                    delay={0.25}
+                                />
+                            )}
+                        </div>
+                    </>
+                )}
             </div>
         </section>
     );
 }
 
-// ─── Countdown strip ───────────────────────────────────────────────────────────
-function CountdownSection() {
-    return (
-        <section className="py-20 px-6" style={{ backgroundColor: "#fdf8f0" }}>
-            <div className="max-w-4xl mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.7 }}
-                        className="flex flex-col items-center text-center p-10 rounded-2xl"
-                        style={{ backgroundColor: "#f0f9f8", border: "1px solid #99f6e4" }}
-                    >
-                        <p className="uppercase tracking-widest mb-2" style={{ color: "#0d9488", fontSize: "0.55rem", letterSpacing: "0.25em" }}>
-                            Colombia
-                        </p>
-                        <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.5rem", fontWeight: 400, color: "#0f766e" }}>
-                            Pereira, Colombia
-                        </h3>
-                        <div className="flex items-center gap-2 mt-2 mb-6">
-                            <Calendar size={12} style={{ color: "#0d9488" }} />
-                            <p className="text-xs" style={{ color: "#5a4a35" }}>November 7, 2026</p>
-                        </div>
-                        <CountdownTimer targetDate={WEDDING_DATES.colombia} textColor="#0f766e" accentColor="#0d9488" size="md" />
-                    </motion.div>
+// ─── RSVP banner ─────────────────────────────────────────────────────────────
+// Was solid navy — same as the Footer right below it — so the two blended
+// into one long dark block with no visual break. Switched to a warm
+// apricot-to-sand gradient so it reads as its own section and the navy
+// Footer underneath stays a clear, deliberate ending.
+function RSVPBannerSection({
+                               attendingColombia,
+                               attendingFlorida,
+                               attendingBoth,
+                               attendingNeither,
+                               firstName,
+                               plusOneCount,
+                               email,
+                               phone,
+                           }: {
+    attendingColombia: boolean;
+    attendingFlorida: boolean;
+    attendingBoth: boolean;
+    attendingNeither: boolean;
+    firstName?: string | null;
+    plusOneCount?: number | null;
+    email?: string | null;
+    phone?: string | null;
+}) {
+    const totalGuests = (plusOneCount ?? 0) + 1;
+    const contactAddress = email || phone || null;
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.7, delay: 0.15 }}
-                        className="flex flex-col items-center text-center p-10 rounded-2xl"
-                        style={{ backgroundColor: "#f0fdf4", border: "1px solid #86efac" }}
-                    >
-                        <p className="uppercase tracking-widest mb-2" style={{ color: "#059669", fontSize: "0.55rem", letterSpacing: "0.25em" }}>
-                            Florida
-                        </p>
-                        <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.5rem", fontWeight: 400, color: "#065f46" }}>
-                            Miami, Florida
-                        </h3>
-                        <div className="flex items-center gap-2 mt-2 mb-6">
-                            <Calendar size={12} style={{ color: "#059669" }} />
-                            <p className="text-xs" style={{ color: "#5a4a35" }}>December 12, 2026</p>
-                        </div>
-                        <CountdownTimer targetDate={WEDDING_DATES.usa} textColor="#065f46" accentColor="#059669" size="md" />
-                    </motion.div>
-                </div>
-            </div>
-        </section>
-    );
-}
+    const locationCopy = attendingBoth
+        ? "Colombia and Texas"
+        : attendingColombia
+            ? "Colombia"
+            : attendingFlorida
+                ? "Fort Worth, Texas"
+                : null;
 
-// ─── RSVP banner ────────────────────────────────────────────────────────────────
-function RSVPBannerSection() {
     return (
-        <section className="py-24 px-6 relative overflow-hidden" style={{ backgroundColor: "#1a1209" }}>
+        <section
+            className="py-24 px-6 relative overflow-hidden"
+            style={{ background: `linear-gradient(160deg, ${APRICOT} 0%, ${SAND} 100%)` }}
+        >
             <div
-                className="absolute inset-0 opacity-10"
+                className="absolute inset-0 opacity-20"
                 style={{
                     backgroundImage:
-                        "radial-gradient(circle at 30% 50%, #d4a574 0%, transparent 50%), radial-gradient(circle at 70% 50%, #2dd4bf 0%, transparent 50%)",
+                        `radial-gradient(circle at 30% 50%, ${IVORY} 0%, transparent 50%), radial-gradient(circle at 70% 50%, ${SKY} 0%, transparent 50%)`,
                 }}
             />
             <div className="relative z-10 max-w-2xl mx-auto text-center">
@@ -438,39 +801,131 @@ function RSVPBannerSection() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.8 }}
                 >
-                    <p className="uppercase tracking-widest mb-4" style={{ color: "#d4a574", fontSize: "0.6rem", letterSpacing: "0.3em" }}>
-                        You&apos;re Invited
-                    </p>
-                    <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2.5rem, 6vw, 4.5rem)", fontWeight: 300, color: "#fdf8f0", lineHeight: 1.05 }}>
-                        RSVP by
-                        <span style={{ fontStyle: "italic", color: "#d4a574" }}> September 1st</span>
-                    </h2>
-                    <p className="mt-6 mb-10" style={{ color: "rgba(253,248,240,0.65)", fontSize: "0.9rem" }}>
-                        Please let us know if you&apos;ll be joining us in Colombia, Florida, or both! We want to make sure everything is perfect for your experience.
-                    </p>
-                    <Link
-                        href="/login"
-                        className="inline-block px-10 py-4 rounded-full text-xs tracking-widest uppercase transition-all hover:opacity-90"
-                        style={{ backgroundColor: "#d4a574", color: "#fff", letterSpacing: "0.2em" }}
-                    >
-                        RSVP Now
-                    </Link>
+                    {attendingNeither ? (
+                        <>
+                            <p className="uppercase tracking-widest mb-4" style={{ color: SKY_DEEP, fontSize: "0.6rem", letterSpacing: "0.3em" }}>
+                                So Sorry To Miss You
+                            </p>
+                            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2.5rem, 6vw, 4.5rem)", fontWeight: 300, color: SKY_DEEP, lineHeight: 1.05 }}>
+                                {firstName ? (
+                                    <>We&apos;ll miss you, <span style={{ fontStyle: "italic" }}>{firstName}</span></>
+                                ) : (
+                                    "We'll Miss You"
+                                )}
+                            </h2>
+                            <p className="mt-6" style={{ color: SKY_DEEP, opacity: 0.8, fontSize: "0.95rem" }}>
+                                It looks like you won&apos;t be able to join us in Colombia or Florida — no worries at all,
+                                we&apos;re just happy you&apos;re part of our story.
+                            </p>
+                            <p className="mt-4" style={{ color: SKY_DEEP, opacity: 0.7, fontSize: "0.9rem" }}>
+                                You're welcome to celebrate from afar with a gift from our registry, and if plans change, we'd
+                                love to have you — just send us an updated RSVP any time.
+                            </p>
+                            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                                <Link
+                                    href="/registry"
+                                    className="inline-flex items-center gap-2 px-10 py-4 rounded-full text-xs tracking-widest uppercase transition-all hover:opacity-90"
+                                    style={{ backgroundColor: SKY_DEEP, color: IVORY, letterSpacing: "0.2em" }}
+                                >
+                                    <Gift size={14} />
+                                    View Registry
+                                </Link>
+                                <Link
+                                    href="/login"
+                                    className="inline-flex items-center gap-2 px-10 py-4 rounded-full text-xs tracking-widest uppercase transition-all hover:opacity-70"
+                                    style={{ border: `1px solid ${SKY_DEEP}`, color: SKY_DEEP, letterSpacing: "0.2em" }}
+                                >
+                                    Update My RSVP
+                                </Link>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <p className="uppercase tracking-widest mb-4" style={{ color: SKY_DEEP, fontSize: "0.6rem", letterSpacing: "0.3em" }}>
+                                You&apos;re Confirmed
+                            </p>
+                            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2.5rem, 6vw, 4.5rem)", fontWeight: 300, color: SKY_DEEP, lineHeight: 1.05 }}>
+                                {firstName ? (
+                                    <>Thank you, <span style={{ fontStyle: "italic" }}>{firstName}</span></>
+                                ) : (
+                                    "Thank You"
+                                )}
+                            </h2>
+
+                            <p className="mt-6" style={{ color: SKY_DEEP, opacity: 0.8, fontSize: "0.95rem" }}>
+                                We&apos;ve saved your spot for {locationCopy}
+                                {totalGuests > 1 ? ` for ${totalGuests} guests` : ""}.
+                            </p>
+
+                            <p className="mt-4 mb-2" style={{ color: SKY_DEEP, opacity: 0.7, fontSize: "0.9rem" }}>
+                                Your official RSVP invitation will be sent later
+                                {contactAddress ? " to:" : "."}
+                            </p>
+
+                            {contactAddress && (
+                                <p
+                                    className="mb-10 inline-block px-5 py-2 rounded-full"
+                                    style={{
+                                        backgroundColor: "rgba(18,59,84,0.08)",
+                                        border: `1px solid ${SKY_DEEP}33`,
+                                        color: SKY_DEEP,
+                                        fontSize: "0.9rem",
+                                    }}
+                                >
+                                    {contactAddress}
+                                </p>
+                            )}
+
+                            <div className={contactAddress ? "" : "mt-4"}>
+                                <Link
+                                    href="/rsvp"
+                                    className="inline-block px-10 py-4 rounded-full text-xs tracking-widest uppercase transition-all hover:opacity-90"
+                                    style={{ backgroundColor: SKY_DEEP, color: IVORY, letterSpacing: "0.2em" }}
+                                >
+                                    View My Details
+                                </Link>
+                            </div>
+                        </>
+                    )}
                 </motion.div>
             </div>
         </section>
     );
 }
 
-// ─── Page ───────────────────────────────────────────────────────────────────────
+// ─── Page ────────────────────────────────────────────────────────────────────
 export default function HomePage() {
+    const { guest, loaded } = useGuest();
+    const { attendingColombia, attendingFlorida, attendingBoth, attendingNeither } = useAttendance(guest);
+
+    // Avoid a flash of the wrong layout before sessionStorage is read on mount.
+    if (!loaded) return null;
+
     return (
         <>
-            <WelcomeBanner />
-            <HeroSection />
+            <WelcomeBanner name={guest?.firstName ?? null} />
+            <HeroSection
+                attendingColombia={attendingColombia}
+                attendingFlorida={attendingFlorida}
+                attendingBoth={attendingBoth}
+            />
             <OurStorySection />
-            <WeddingsSection />
-            <CountdownSection />
-            <RSVPBannerSection />
+            <WeddingsSection
+                attendingColombia={attendingColombia}
+                attendingFlorida={attendingFlorida}
+                attendingBoth={attendingBoth}
+                attendingNeither={attendingNeither}
+            />
+            <RSVPBannerSection
+                attendingColombia={attendingColombia}
+                attendingFlorida={attendingFlorida}
+                attendingBoth={attendingBoth}
+                attendingNeither={attendingNeither}
+                firstName={guest?.firstName ?? null}
+                plusOneCount={guest?.plusOneCount ?? null}
+                email={guest?.email ?? null}
+                phone={guest?.phone ?? null}
+            />
         </>
     );
 }

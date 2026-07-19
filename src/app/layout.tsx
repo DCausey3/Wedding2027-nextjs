@@ -7,11 +7,11 @@ import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
     title: {
-        default: "Jhoana & Damariel | Wedding 2026",
+        default: "Jhoana & Damariel | Wedding 2027",
         template: "%s | Jhoana & Damariel",
     },
     description:
-        "Join us as we celebrate our love — two weddings, two countries, one love story. Colombia · November 2026 | USA · December 2026",
+        "Join us as we celebrate our love — two weddings, two countries, one love story.",
     openGraph: {
         type: "website",
         siteName: "Jhoana & Damariel Wedding",

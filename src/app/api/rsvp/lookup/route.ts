@@ -40,13 +40,21 @@ export async function GET(req: NextRequest) {
                 id: guest.id,
                 firstName: guest.firstName,
                 lastName: guest.lastName,
+                email: guest.email,
+                phone: guest.phone,
                 eligibleColombia: guest.eligibleColombia,
                 plusOneAllowed: guest.plusOneAllowed,
                 plusOneCount: guest.plusOneCount,
                 selectedWedding: guest.selectedWedding,
                 stdResponded: guest.stdResponded,
-                role:guest.role,
+                // These two are what the homepage actually reads to decide what to show —
+                // they were previously omitted here and only sent under previousResponse,
+                // which nothing on the client consumes.
+                stdAttendingColombia: guest.stdAttendingColombia,
+                stdAttendingFlorida: guest.stdAttendingFlorida,
+                role: guest.role,
                 invitationType: guest.invitationType,
+                mailingAddress: guest.mailingAddress,
             },
             previousResponse: guest.stdResponded
                 ? {

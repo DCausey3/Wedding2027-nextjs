@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { RSVPFlow } from "@/components/rsvp/RSVPFlow";
+import MyDetailsPage from "@/components/rsvp/RSVPFlow";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 
 export const metadata: Metadata = { title: "RSVP" };
@@ -15,7 +15,7 @@ export default function RSVPPage() {
             subtitle="Deadline: September 1st, 2026. Enter your invitation code to begin."
           />
         </div>
-        <RSVPFlow />
+        <MyDetailsPage />
       </div>
     </div>
   );
