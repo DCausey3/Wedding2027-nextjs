@@ -19,7 +19,6 @@ type NavLink = { href: string; label: string };
 const BASE_LINKS: NavLink[] = [
     { href: "/home", label: "Home" },
     { href: "/our-story", label: "Our Story" },
-    { href: "/events", label: "Events" },
     { href: "/bridalParty", label: "Meet Bridal Party" },
     { href: "/rsvp", label: "RSVP" },
     { href: "/registry", label: "Registry" },

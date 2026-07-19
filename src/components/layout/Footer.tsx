@@ -14,8 +14,6 @@ const COLORS = {
 };
 
 const FOOTER_LINKS = [
-    { href: "/events", label: "Events" },
-    { href: "/travel", label: "Travel" },
     { href: "/rsvp", label: "RSVP" },
     { href: "/registry", label: "Registry" },
     { href: "/faq", label: "FAQ" },
