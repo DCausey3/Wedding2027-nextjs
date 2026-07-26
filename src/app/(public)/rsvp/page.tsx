@@ -7,16 +7,9 @@ export const metadata: Metadata = { title: "RSVP" };
 export default function RSVPPage() {
   return (
     <div className="min-h-screen pt-24 pb-20 px-6" style={{ backgroundColor: "#fdf8f0" }}>
-      <div className="max-w-xl mx-auto">
-        <div className="text-center mb-12">
-          <SectionHeader
-            overline="Your Response"
-            title="RSVP"
-            subtitle="Deadline: September 1st, 2026. Enter your invitation code to begin."
-          />
-        </div>
         <MyDetailsPage />
-      </div>
-    </div>
+        </div>
+
+
   );
 }

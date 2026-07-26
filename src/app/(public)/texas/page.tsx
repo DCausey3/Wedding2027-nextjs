@@ -8,7 +8,7 @@ import { CountdownTimer } from '../../../components/ui/CountdownTimer';
 
 const TEXAS_DATE = new Date('2027-04-30T18:00:00'); // ceremony time still TBD — using a placeholder evening time
 
-const HERO = 'https://images.unsplash.com/photo-1719008682128-5ebdbc7ccfab?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxGbG9yaWRhJTIwY29hc3RhbCUyMGVsZWdhbnQlMjB3ZWRkaW5nJTIwdmVudWUlMjBzdW5zZXR8ZW58MXx8fHwxNzgwMDg1OTY1fDA&ixlib=rb-4.1.0&q=80&w=1080';
+const HERO = '/MartyL.jpeg';
 
 // Palette — Sky Blue + Apricot + Ivory + Sand
 const SKY_DEEP = "#123B54";
@@ -22,7 +22,7 @@ const GREENERY = "#7FAA6E";
 const basicTravelInfo = [
     { icon: MapPin, label: 'Venue', value: 'Marty Leonard Chapel, Fort Worth, TX' },
     { icon: Calendar, label: 'Date', value: 'April 30, 2027' },
-    { icon: Clock, label: 'Time', value: 'Ceremony time to be announced' },
+    { icon: Clock, label: 'Time', value: '6:00 pm CST' },
     { icon: Plane, label: 'Airport', value: 'Fly into DFW (Dallas/Fort Worth Int\'l) or Dallas Love Field' },
     { icon: Car, label: 'Getting Around', value: 'A car or rideshare is recommended once you land' },
     { icon: Hotel, label: 'Lodging', value: 'Hotel block details coming soon' },
@@ -74,7 +74,7 @@ export default function TexasPage() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <Clock size={14} style={{ color: APRICOT }} />
-                                <span className="text-sm" style={{ color: IVORY }}>Time to be announced</span>
+                                <span className="text-sm" style={{ color: IVORY }}>6:00pm CST</span>
                             </div>
                         </div>
                     </motion.div>
@@ -153,39 +153,6 @@ export default function TexasPage() {
                 </div>
             </section>
 
-            {/* RSVP CTA */}
-            <section
-                className="py-20 px-6"
-                style={{ background: `linear-gradient(135deg, ${SKY_DEEP} 0%, ${GREENERY} 50%, ${APRICOT} 100%)` }}
-            >
-                <div className="max-w-2xl mx-auto text-center">
-                    <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-                        <Plane size={32} className="mx-auto mb-6" style={{ color: 'rgba(255,247,236,0.7)' }} />
-                        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 300, color: IVORY, lineHeight: 1.1 }}>
-                            Planning your trip to Fort Worth?
-                        </h2>
-                        <p className="mt-4 mb-8" style={{ color: 'rgba(255,247,236,0.75)', fontSize: '0.9rem' }}>
-                            More details on lodging and timing are on the way. In the meantime, here's what you can plan around.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <Link
-                                href="/travel"
-                                className="px-8 py-3 rounded-full text-xs uppercase tracking-widest transition-all hover:opacity-90"
-                                style={{ backgroundColor: IVORY, color: SKY_DEEP, letterSpacing: '0.2em' }}
-                            >
-                                Travel Details
-                            </Link>
-                            <Link
-                                href="/rsvp"
-                                className="px-8 py-3 rounded-full text-xs uppercase tracking-widest transition-all hover:bg-white/10"
-                                style={{ border: '1px solid rgba(255,247,236,0.5)', color: IVORY, letterSpacing: '0.2em' }}
-                            >
-                                RSVP for Texas
-                            </Link>
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
         </div>
     );
 }

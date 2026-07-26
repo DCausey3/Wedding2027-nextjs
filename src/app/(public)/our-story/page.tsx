@@ -38,8 +38,8 @@ const MOMENTS = [
     },
     {
         year: "2027",
-        title: "Two Celebrations",
-        body: "Now, with grateful hearts and surrounded by the love of family and friends, we're beginning our greatest adventure yet — with celebrations in both Colombia and Fort Worth, Texas.",
+        title: "Celebration Time",
+        body: "Now, with grateful hearts and surrounded by the love of family and friends, we're beginning our greatest adventure yet.",
     },
 ];
 
@@ -117,7 +117,7 @@ export default function OurStoryPage() {
 
                         <p>
                             Our first date was at <strong style={{ color: NAVY, opacity: 1 }}>Flippin' Fries Factory</strong> in
-                            The Krates. We shared a basket of loaded fries, although Damariel was so nervous he barely ate! As the
+                            The Krates. We "shared" a basket of loaded fries, Damariel was so nervous he barely ate! As the
                             conversation flowed, one simple question changed everything:
                         </p>
 
