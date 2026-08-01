@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
     try {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const supabaseServiceKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
         if (!supabaseUrl || !supabaseServiceKey) {
             return NextResponse.json({ error: "Supabase configuration missing" }, { status: 500 });
@@ -45,7 +45,7 @@ export async function GET() {
 export async function POST(req: Request) {
     try {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const supabaseServiceKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
         if (!supabaseUrl || !supabaseServiceKey) {
             return NextResponse.json({ error: "Supabase configuration missing" }, { status: 500 });
