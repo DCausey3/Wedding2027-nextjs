@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server"; // adjust path if your project's differs
 
 /**
  * HOW TO WIRE THIS UP (AWS SES):
@@ -187,6 +188,7 @@ export async function POST(req: NextRequest) {
             smsConsent,
             declineNote,
             bridal,
+            skipInternalNotification, // set true for admin-triggered resends
         } = body;
 
         if (!guestId || typeof attending !== "boolean") {
@@ -237,6 +239,24 @@ export async function POST(req: NextRequest) {
             try {
                 const r = await ses.send(guestCommand);
                 results.guestEmail = { success: true, messageId: r.MessageId };
+
+                // Mark this guest as having received their confirmation, so the
+                // admin dashboard's "pending" list and the resend tool both know
+                // not to treat them as unsent.
+                try {
+                    const supabase = await createClient();
+                    await supabase
+                        .from("guests")
+                        .update({
+                            confirmation_email_sent: true,
+                            confirmation_email_sent_at: new Date().toISOString(),
+                        })
+                        .eq("id", guestId);
+                } catch (dbErr) {
+                    // Don't fail the request over this — the email did send
+                    // successfully, this is just bookkeeping.
+                    console.error("Failed to mark confirmation_email_sent:", dbErr);
+                }
             } catch (err: any) {
                 console.error("Guest confirmation email failed:", err?.message ?? err);
                 results.guestEmail = { success: false, error: err?.message };
@@ -245,7 +265,13 @@ export async function POST(req: NextRequest) {
             results.guestEmail = { skipped: true };
         }
 
-        // 2. Internal notification — sent on every response, attending or not.
+        // 2. Internal notification — sent on every response, attending or not,
+        //    unless the caller explicitly opted out (e.g. an admin bulk resend).
+        if (skipInternalNotification) {
+            results.internalEmail = { skipped: true };
+            return NextResponse.json({ success: true, ...results });
+        }
+
         const internalData = {
             firstName: name,
             lastName,

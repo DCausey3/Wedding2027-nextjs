@@ -1,54 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
-import { getServerAuthUser } from "@/lib/auth-utils";
+import { createClient } from "@/utils/supabase/server"; // adjust path if your project's differs
 
-// Generates a readable invite code like "SMITH4F2A"
-function generateInviteCode(lastName: string) {
-  const base = lastName.replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 6) || "GUEST";
-  const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `${base}${suffix}`;
+function isAdminEmail(email: string | null | undefined) {
+    if (!email) return false;
+    const admins = (process.env.ADMIN_EMAILS || "")
+        .split(",")
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean);
+    return admins.includes(email.toLowerCase());
 }
 
-export async function POST(req: NextRequest) {
-  const user = await getServerAuthUser();
-  if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
-    const body = await req.json();
-    const { firstName, lastName, email, phone, guestType, plusOneAllowed, side, notes } = body;
-
-    if (!firstName || !lastName) {
-      return NextResponse.json(
-        { error: "firstName and lastName are required" },
-        { status: 400 }
-      );
+export async function GET(req: NextRequest) {
+    const requesterEmail = req.headers.get("x-admin-email");
+    if (!isAdminEmail(requesterEmail)) {
+        return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
     const supabase = await createClient();
-
     const { data, error } = await supabase
-      .from("guests")
-      .insert({
-        first_name: firstName,
-        last_name: lastName,
-        email: email || null,
-        phone: phone || null,
-        invitation_code: generateInviteCode(lastName),
-        guest_type: guestType ?? "CHOOSE_ONE",
-        plus_one_allowed: !!plusOneAllowed,
-        side: side || null,
-        notes: notes || null,
-      })
-      .select()
-      .single();
+        .from("guests")
+        .select(
+            "id, first_name, last_name, email, phone, selected_wedding, std_responded, std_attending_colombia, std_attending_florida, plus_one_count, confirmation_email_sent, role, invitation_type"
+        )
+        .order("last_name", { ascending: true });
 
-    if (error) throw new Error(error.message);
+    if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
-    return NextResponse.json({ guest: data });
-  } catch (err: any) {
-    console.error("Create guest error:", err);
-    return NextResponse.json({ error: err.message ?? "Server error" }, { status: 500 });
-  }
+    // Map snake_case DB columns to the camelCase shape the dashboard expects.
+    const guests = (data ?? []).map((g: any) => ({
+        id: g.id,
+        firstName: g.first_name,
+        lastName: g.last_name,
+        email: g.email,
+        phone: g.phone,
+        selectedWedding: g.selected_wedding,
+        stdResponded: g.std_responded,
+        stdAttendingColombia: g.std_attending_colombia,
+        stdAttendingFlorida: g.std_attending_florida,
+        plusOneCount: g.plus_one_count,
+        confirmationEmailSent: g.confirmation_email_sent,
+        role: g.role,
+        invitationType: g.invitation_type,
+    }));
+
+    return NextResponse.json({ guests });
 }
