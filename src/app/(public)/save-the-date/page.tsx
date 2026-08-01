@@ -144,7 +144,9 @@ function SaveTheDateContent() {
     const handleSubmit = async () => {
         if (!canSubmit || !guest) return;
         setSubmitting(true);
+
         try {
+            // Step 1: Save RSVP / STD to DB
             const res = await fetch("/api/std-rsvp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -160,13 +162,17 @@ function SaveTheDateContent() {
                     declineNote: showDeclineNote ? declineNote : undefined,
                 }),
             });
+
             const json = await res.json();
             if (!res.ok) throw new Error(json.error ?? "Submission failed");
 
+            // Step 2: Update local state session
             sessionStorage.setItem(
                 "guest",
                 JSON.stringify({
                     ...guest,
+                    email: email.trim() || guest.email,
+                    phone: phone.trim() || guest.phone,
                     stdResponded: true,
                     stdAttendingColombia: attendingWeddingKeys.includes("Colombia"),
                     stdAttendingFlorida: attendingWeddingKeys.includes("USA"),
@@ -174,31 +180,41 @@ function SaveTheDateContent() {
                 })
             );
 
-            // Fire-and-forget notification — fires on EVERY response (attending or
-            // declining) so you two get notified either way; the route itself
-            // decides whether to also send the guest-facing confirmation.
-            fetch("/api/send-confirmation-email", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    guestId: guest.id,
-                    firstName: guest.firstName,
-                    lastName: guest.lastName,
-                    email: email.trim() || guest.email || undefined,
-                    phone: phone.trim() || guest.phone || undefined,
-                    attending: isAttendingAnything,
-                    attendingWeddings: attendingWeddingKeys,
-                    headcount: isAttendingAnything ? headcount : 0,
-                    mailingAddress: showMailingAddress ? mailingAddress.trim() : undefined,
-                    smsConsent: isAttendingAnything ? smsConsent : false,
-                    declineNote: showDeclineNote ? declineNote.trim() : undefined,
-                    bridal,
-                }),
-            }).catch((e) => console.error("Notification email failed to send:", e));
+            // Step 3: Send Confirmation Email (Awaited so it doesn't get canceled on navigate)
+            try {
+                const emailRes = await fetch("/api/send-confirmation-email", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        guestId: guest.id,
+                        firstName: guest.firstName,
+                        lastName: guest.lastName,
+                        email: email.trim() || guest.email || "",
+                        phone: phone.trim() || guest.phone || "",
+                        attending: isAttendingAnything,
+                        attendingWeddings: attendingWeddingKeys,
+                        headcount: isAttendingAnything ? headcount : 0,
+                        mailingAddress: showMailingAddress ? mailingAddress.trim() : "",
+                        smsConsent: isAttendingAnything ? smsConsent : false,
+                        declineNote: showDeclineNote ? declineNote.trim() : "",
+                        bridal,
+                    }),
+                });
 
+                if (!emailRes.ok) {
+                    const emailErr = await emailRes.json();
+                    console.warn("[Email Route Warning]:", emailErr);
+                }
+            } catch (emailError) {
+                console.error("[Email Dispatch Error]:", emailError);
+                // Non-blocking: DB save succeeded, so we don't block the user's flow
+            }
+
+            // Step 4: Complete UI transition
             if (isAttendingAnything) fireConfetti();
             setDone(true);
-            setTimeout(() => router.push(`/?guest=${guest.id}`), 2200);
+            setTimeout(() => router.push(`/?guest=${guest.id}`), 2500);
+
         } catch (err: any) {
             alert(err.message ?? "Something went wrong saving your response. Please try again.");
         } finally {

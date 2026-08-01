@@ -1,27 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server"; // adjust path if your project's differs
+import { createClient } from "@/utils/supabase/server";
 
-/**
- * HOW TO WIRE THIS UP (AWS SES):
- * 1. In the AWS SES console, verify the domain identity for causeycardenasforever.com
- *    (add the DKIM/DNS records SES gives you wherever your domain's DNS lives).
- *    Once verified, you can send from ANY address on that domain — no need to
- *    verify SaveTheDate@ separately.
- * 2. You're already out of the SES sandbox, so once the domain is verified
- *    you're fully unblocked — no waiting on recipient verification.
- * 3. `npm install @aws-sdk/client-ses` (skip if already installed).
- * 4. Env vars (.env.local + hosting provider):
- *      AWS_REGION            e.g. "us-east-1"
- *      AWS_ACCESS_KEY_ID
- *      AWS_SECRET_ACCESS_KEY
- *    Scope these to an IAM user/role with ses:SendEmail only.
- * 5. INTERNAL_NOTIFY_EMAILS below — set to whoever should get the
- *    "guest just responded" email (comma-separated if more than one).
- */
-
-const FROM_EMAIL = "Jhoana & Damariel <SaveTheDate@causeycardenasforever.com>"; // must match verified SES domain identity
-const REPLY_TO_EMAIL = "causeycardenas@gmail.com"; // guest replies land here, not the automated sender
-const INTERNAL_NOTIFY_EMAILS = ["causeycardenas@gmail.com"]; // TODO: add a second address here if needed
+const FROM_EMAIL = "Jhoana & Damariel <SaveTheDate@causeycardenasforever.com>";
+const REPLY_TO_EMAIL = "causeycardenas@gmail.com";
+const INTERNAL_NOTIFY_EMAILS = ["causeycardenas@gmail.com"];
 const SITE_URL = "https://causeycardenasforever.com";
 
 const WEDDING_LABELS: Record<string, string> = {
@@ -29,7 +11,7 @@ const WEDDING_LABELS: Record<string, string> = {
     USA: "Gainesville — April 30, 2027 · Baughman Center",
 };
 
-// ---------- Guest-facing confirmation ----------
+// ---------- Guest Email Templates ----------
 
 function buildGuestEmailHtml(firstName: string, attendingWeddings: string[]) {
     const weddingLines = attendingWeddings
@@ -93,22 +75,9 @@ Need to update anything — your headcount, contact info, or attendance? Just lo
 — Jhoana & Damariel`;
 }
 
-// ---------- Internal "a guest just responded" notification ----------
+// ---------- Internal Email Templates ----------
 
-function buildInternalEmailHtml(data: {
-    firstName: string;
-    lastName?: string;
-    guestId: string;
-    email?: string;
-    phone?: string;
-    attending: boolean;
-    attendingWeddings: string[];
-    headcount: number;
-    mailingAddress?: string;
-    smsConsent: boolean;
-    declineNote?: string;
-    bridal?: boolean;
-}) {
+function buildInternalEmailHtml(data: any) {
     const row = (label: string, value: string) => `
       <tr>
         <td style="padding:6px 12px 6px 0; font-size:12px; color:#123B5499; white-space:nowrap; vertical-align:top;">${label}</td>
@@ -116,7 +85,7 @@ function buildInternalEmailHtml(data: {
       </tr>`;
 
     const weddingSummary = data.attending
-        ? data.attendingWeddings.map((k) => WEDDING_LABELS[k] ?? k).join(" + ") || "—"
+        ? data.attendingWeddings.map((k: string) => WEDDING_LABELS[k] ?? k).join(" + ") || "—"
         : "Declined";
 
     return `
@@ -144,22 +113,9 @@ function buildInternalEmailHtml(data: {
   `;
 }
 
-function buildInternalEmailText(data: {
-    firstName: string;
-    lastName?: string;
-    guestId: string;
-    email?: string;
-    phone?: string;
-    attending: boolean;
-    attendingWeddings: string[];
-    headcount: number;
-    mailingAddress?: string;
-    smsConsent: boolean;
-    declineNote?: string;
-    bridal?: boolean;
-}) {
+function buildInternalEmailText(data: any) {
     const weddingSummary = data.attending
-        ? data.attendingWeddings.map((k) => WEDDING_LABELS[k] ?? k).join(" + ") || "—"
+        ? data.attendingWeddings.map((k: string) => WEDDING_LABELS[k] ?? k).join(" + ") || "—"
         : "Declined";
 
     return `${data.attending ? "New RSVP: attending" : "New RSVP: declined"}${data.bridal ? " (Bridal Party)" : ""}
@@ -188,32 +144,30 @@ export async function POST(req: NextRequest) {
             smsConsent,
             declineNote,
             bridal,
-            skipInternalNotification, // set true for admin-triggered resends
+            skipInternalNotification,
         } = body;
 
         if (!guestId || typeof attending !== "boolean") {
             return NextResponse.json({ error: "guestId and attending are required" }, { status: 400 });
         }
 
-        // NOTE: using SES_* env var names, not AWS_* — Amplify reserves the
-        // "AWS" prefix for its own runtime-injected credentials and will
-        // reject any env var starting with it.
-        const hasCreds = process.env.SES_ACCESS_KEY_ID && process.env.SES_SECRET_ACCESS_KEY;
-        if (!hasCreds) {
-            // Don't hard-fail the RSVP flow just because email isn't configured yet.
-            console.warn("SES credentials not set — skipping confirmation/notification emails.");
-            return NextResponse.json({ skipped: true, reason: "Email not configured yet" });
+        // Support both custom SES_ prefix and standard AWS_ prefix
+        const accessKeyId = process.env.SES_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID;
+        const secretAccessKey = process.env.SES_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY;
+        const region = process.env.SES_REGION || process.env.AWS_REGION || "us-east-2";
+
+        if (!accessKeyId || !secretAccessKey) {
+            console.error("SES Credentials Missing! Check your environment variables.");
+            return NextResponse.json({ error: "SES Credentials missing on server" }, { status: 500 });
         }
 
-        // Lazy import so this route doesn't hard-fail at build/import time if the
-        // SES SDK isn't installed yet.
         const { SESClient, SendEmailCommand } = await import("@aws-sdk/client-ses");
 
         const ses = new SESClient({
-            region: process.env.SES_REGION || "us-east-2",
+            region,
             credentials: {
-                accessKeyId: process.env.SES_ACCESS_KEY_ID!,
-                secretAccessKey: process.env.SES_SECRET_ACCESS_KEY!,
+                accessKeyId,
+                secretAccessKey,
             },
         });
 
@@ -221,9 +175,8 @@ export async function POST(req: NextRequest) {
         const name = firstName || "there";
         const results: Record<string, any> = {};
 
-        // 1. Guest-facing confirmation — only when attending something, and only
-        //    if we actually have an email to send it to.
-        if (attending && typeof email === "string" && email.trim()) {
+        // 1. Send Guest Confirmation
+        if (attending && typeof email === "string" && email.trim().length > 0) {
             const guestCommand = new SendEmailCommand({
                 Source: FROM_EMAIL,
                 Destination: { ToAddresses: [email.trim()] },
@@ -236,13 +189,12 @@ export async function POST(req: NextRequest) {
                     },
                 },
             });
+
             try {
                 const r = await ses.send(guestCommand);
                 results.guestEmail = { success: true, messageId: r.MessageId };
 
-                // Mark this guest as having received their confirmation, so the
-                // admin dashboard's "pending" list and the resend tool both know
-                // not to treat them as unsent.
+                // Bookkeeping in Supabase
                 try {
                     const supabase = await createClient();
                     await supabase
@@ -253,71 +205,63 @@ export async function POST(req: NextRequest) {
                         })
                         .eq("id", guestId);
                 } catch (dbErr) {
-                    // Don't fail the request over this — the email did send
-                    // successfully, this is just bookkeeping.
-                    console.error("Failed to mark confirmation_email_sent:", dbErr);
+                    console.error("Failed to mark confirmation_email_sent in DB:", dbErr);
                 }
             } catch (err: any) {
-                console.error("Guest confirmation email failed:", err?.message ?? err);
-                results.guestEmail = { success: false, error: err?.message };
+                console.error("AWS SES Guest Email Error:", err?.message || err);
+                results.guestEmail = { success: false, error: err?.message || "SES send error" };
             }
         } else {
-            results.guestEmail = { skipped: true };
+            results.guestEmail = { skipped: true, reason: !attending ? "Not attending" : "No email address provided" };
         }
 
-        // 2. Internal notification — sent on every response, attending or not,
-        //    unless the caller explicitly opted out (e.g. an admin bulk resend).
-        if (skipInternalNotification) {
+        // 2. Send Internal Notification
+        if (!skipInternalNotification) {
+            const internalData = {
+                firstName: name,
+                lastName,
+                guestId,
+                email: typeof email === "string" ? email.trim() : undefined,
+                phone: typeof phone === "string" ? phone.trim() : undefined,
+                attending,
+                attendingWeddings: weddingKeys,
+                headcount: typeof headcount === "number" ? headcount : 0,
+                mailingAddress: typeof mailingAddress === "string" && mailingAddress.trim() ? mailingAddress.trim() : undefined,
+                smsConsent: !!smsConsent,
+                declineNote: typeof declineNote === "string" && declineNote.trim() ? declineNote.trim() : undefined,
+                bridal: !!bridal,
+            };
+
+            const internalCommand = new SendEmailCommand({
+                Source: FROM_EMAIL,
+                Destination: { ToAddresses: INTERNAL_NOTIFY_EMAILS },
+                ReplyToAddresses: [REPLY_TO_EMAIL],
+                Message: {
+                    Subject: {
+                        Data: `${attending ? "✅" : "🌸"} ${name} just RSVP'd — ${attending ? weddingKeys.join(" + ") || "attending" : "declined"}`,
+                        Charset: "UTF-8",
+                    },
+                    Body: {
+                        Html: { Data: buildInternalEmailHtml(internalData), Charset: "UTF-8" },
+                        Text: { Data: buildInternalEmailText(internalData), Charset: "UTF-8" },
+                    },
+                },
+            });
+
+            try {
+                const r = await ses.send(internalCommand);
+                results.internalEmail = { success: true, messageId: r.MessageId };
+            } catch (err: any) {
+                console.error("AWS SES Internal Email Error:", err?.message || err);
+                results.internalEmail = { success: false, error: err?.message || "SES internal email error" };
+            }
+        } else {
             results.internalEmail = { skipped: true };
-            return NextResponse.json({ success: true, ...results });
-        }
-
-        const internalData = {
-            firstName: name,
-            lastName,
-            guestId,
-            email: typeof email === "string" ? email.trim() : undefined,
-            phone: typeof phone === "string" ? phone.trim() : undefined,
-            attending,
-            attendingWeddings: weddingKeys,
-            headcount: typeof headcount === "number" ? headcount : 0,
-            mailingAddress: typeof mailingAddress === "string" && mailingAddress.trim() ? mailingAddress.trim() : undefined,
-            smsConsent: !!smsConsent,
-            declineNote: typeof declineNote === "string" && declineNote.trim() ? declineNote.trim() : undefined,
-            bridal: !!bridal,
-        };
-
-        const internalCommand = new SendEmailCommand({
-            Source: FROM_EMAIL,
-            Destination: { ToAddresses: INTERNAL_NOTIFY_EMAILS },
-            ReplyToAddresses: [REPLY_TO_EMAIL],
-            Message: {
-                Subject: {
-                    Data: `${attending ? "✅" : "🌸"} ${name} just RSVP'd — ${attending ? weddingKeys.join(" + ") || "attending" : "declined"}`,
-                    Charset: "UTF-8",
-                },
-                Body: {
-                    Html: { Data: buildInternalEmailHtml(internalData), Charset: "UTF-8" },
-                    Text: { Data: buildInternalEmailText(internalData), Charset: "UTF-8" },
-                },
-            },
-        });
-
-        try {
-            const r = await ses.send(internalCommand);
-            results.internalEmail = { success: true, messageId: r.MessageId };
-        } catch (err: any) {
-            console.error("Internal notification email failed:", err?.message ?? err);
-            results.internalEmail = { success: false, error: err?.message };
         }
 
         return NextResponse.json({ success: true, ...results });
     } catch (err: any) {
-        if (err?.name === "MessageRejected") {
-            console.error("SES rejected the message (check sandbox mode / verified identities):", err.message);
-        } else {
-            console.error("send-confirmation-email (SES) error:", err);
-        }
+        console.error("Fatal /api/send-confirmation-email error:", err);
         return NextResponse.json({ error: err.message ?? "Server error" }, { status: 500 });
     }
 }

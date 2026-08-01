@@ -1,16 +1,14 @@
-/**
- * Supabase query helpers — server-side only.
- * Uses the anon client for reads (RLS applies) and the publishable key
- * for writes via API routes (service role key not needed with proper RLS).
- */
+import { createBrowserClient } from "@supabase/ssr";
 
-import { createClient } from "@/utils/supabase/server";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+// Initialize client-side Supabase instance
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 // ── Guest Queries ──────────────────────────────────────────────────────────────
 
 export async function getGuestByInvitationCode(code: string) {
-    const supabase = await createClient();
-
     const { data, error } = await supabase
         .from("guests")
         .select("*")
@@ -22,8 +20,6 @@ export async function getGuestByInvitationCode(code: string) {
 }
 
 export async function getAllGuests() {
-    const supabase = await createClient();
-
     const { data, error } = await supabase
         .from("guests")
         .select("*")
@@ -32,9 +28,8 @@ export async function getAllGuests() {
     if (error) throw new Error(error.message);
     return (data ?? []).map(mapGuestRow);
 }
-export async function getGuestByEmail(email: string) {
-    const supabase = await createClient();
 
+export async function getGuestByEmail(email: string) {
     const { data, error } = await supabase
         .from("guests")
         .select("*")
@@ -46,8 +41,6 @@ export async function getGuestByEmail(email: string) {
 }
 
 export async function getGuestByPhone(phone: string) {
-    const supabase = await createClient();
-
     const { data, error } = await supabase
         .from("guests")
         .select("*")
@@ -59,8 +52,6 @@ export async function getGuestByPhone(phone: string) {
 }
 
 export async function getGuestById(id: string) {
-    const supabase = await createClient();
-
     const { data, error } = await supabase
         .from("guests")
         .select("*")
@@ -70,6 +61,7 @@ export async function getGuestById(id: string) {
     if (error) throw new Error(error.message);
     return data ? mapGuestRow(data) : null;
 }
+
 // ── Row mapping: snake_case (DB) → camelCase (app/components) ─────────────────
 function mapGuestRow(row: any) {
     return {
@@ -102,7 +94,6 @@ function mapGuestRow(row: any) {
 }
 
 export async function updateGuest(id: string, updates: Record<string, any>) {
-    const supabase = await createClient();
     const { data, error } = await supabase
         .from("guests")
         .update(updates)
@@ -123,8 +114,6 @@ export async function updateRSVP(payload: {
     plusOneAttending?: boolean;
     notes?: string;
 }) {
-    const supabase = await createClient();
-
     const { data, error } = await supabase
         .from("guests")
         .update({
@@ -146,8 +135,6 @@ export async function updateRSVP(payload: {
 // ── Dashboard Stats ────────────────────────────────────────────────────────────
 
 export async function getDashboardStats() {
-    const supabase = await createClient();
-
     const { data: guests, error } = await supabase
         .from("guests")
         .select("*");
@@ -165,7 +152,6 @@ export async function getDashboardStats() {
     let plusOneCount = 0;
 
     guests.forEach((guest) => {
-        // Determine overall RSVP statuses
         if (guest.rsvp_responded) {
             if (guest.attending_colombia || guest.attending_florida) {
                 accepted++;
@@ -176,7 +162,6 @@ export async function getDashboardStats() {
             pending++;
         }
 
-        // Attendance overlaps
         if (guest.attending_colombia && guest.attending_florida) {
             bothCount++;
         }
@@ -187,10 +172,9 @@ export async function getDashboardStats() {
             floridaCount++;
         }
 
-        // Plus one tracking metrics
         if (guest.plus_one_attending) {
             plusOneCount++;
-            totalInvited++; // Add plus-ones to total head counts if they are coming
+            totalInvited++;
 
             if (guest.attending_colombia) colombiaCount++;
             if (guest.attending_florida) floridaCount++;

@@ -66,21 +66,30 @@ export default function LoginPage() {
 
             const guest = json.guest;
 
-            // DEBUG: confirm the exact field names/values coming back for attendance.
+            // DEBUG: confirm field values coming back from the API
             console.log("[Login] guest object:", guest);
-            console.log("[Login] guest.stdAttendingColombia:", guest?.stdAttendingColombia, typeof guest?.stdAttendingColombia);
-            console.log("[Login] guest.stdAttendingFlorida:", guest?.stdAttendingFlorida, typeof guest?.stdAttendingFlorida);
-            console.log("[Login] guest.stdResponded:", guest?.stdResponded);
+            console.log("[Login] guest role:", guest?.role);
 
-            // Sync with your AuthContext state management
+            // Sync with AuthContext and sessionStorage
             setGuest(guest);
-
-            // Soft RSVP gate: if they haven't confirmed save-the-date yet,
-            // send them there instead of the homepage. Hard RSVP comes later.
             sessionStorage.setItem('guest', JSON.stringify(guest));
             console.log("[Login] wrote to sessionStorage:", sessionStorage.getItem('guest'));
 
-            if (!guest.stdResponded) {
+            // Sync with AuthContext and sessionStorage
+            setGuest(guest);
+            sessionStorage.setItem('guest', JSON.stringify(guest));
+
+// Set cookie so Next.js Middleware can verify authorization on the server
+            document.cookie = `guest=${encodeURIComponent(
+                JSON.stringify({ id: guest.id, role: guest.role })
+            )}; path=/; max-age=604800; SameSite=Lax`;
+
+// Check if the guest is Bride or Groom (Admin Access)
+            const isAdmin = guest?.role === 'Bride' || guest?.role === 'Groom';
+
+            if (isAdmin) {
+                router.push('/admin/dashboard');
+            } else if (!guest.stdResponded) {
                 setError('');
                 router.push(`/save-the-date?guest=${guest.id}`);
             } else {

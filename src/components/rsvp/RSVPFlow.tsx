@@ -247,7 +247,7 @@ export default function MyDetailsPage() {
                             {attendingColombia && (
                                 <WeddingChip
                                     label="Colombia Wedding"
-                                    date="November 7, 2026"
+                                    date="June,2027"
                                     location="Pereira, Colombia"
                                     accent={SKY_MID}
                                     icon="COL"

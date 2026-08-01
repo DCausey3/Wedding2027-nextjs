@@ -57,10 +57,10 @@ export default function EventsPage() {
               </h2>
               <div className="space-y-2 mb-8">
                 {[
-                  { icon: Calendar, text: "November 7, 2026" },
-                  { icon: MapPin, text: "Hacienda La Cabaña · Pereira, Colombia" },
-                  { icon: Clock, text: "Ceremony at 5:00 PM" },
-                  { icon: Shirt, text: "Tropical Formal / Festive Attire" },
+                  { icon: Calendar, text: "June, 2027" },
+                  { icon: MapPin, text: "Colombia" },
+                  { icon: Clock, text: "TBD" },
+                  { icon: Shirt, text: "TBD" },
                 ].map(({ icon: Icon, text }) => (
                   <div key={text} className="flex items-center gap-3">
                     <Icon size={14} className="text-colombia-teal flex-shrink-0" />
@@ -84,7 +84,7 @@ export default function EventsPage() {
 
           {/* Timeline */}
           <div className="mt-20 max-w-2xl mx-auto">
-            <SectionHeader overline="November 7, 2026" title="Day of" titleItalic="Events" className="mb-10" />
+            <SectionHeader overline="June, 2027" title="Day of" titleItalic="Events" className="mb-10" />
             <EventTimeline items={COLOMBIA_TIMELINE} accentColor="#0d9488" />
           </div>
         </div>

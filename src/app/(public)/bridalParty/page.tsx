@@ -35,7 +35,7 @@ const BRIDAL_PARTY: Member[] = [
     { name: 'Steve Atkins', role: 'Co-Best Man', side: 'groom', location: 'Orlando,Florida', howTheyKnowUs: 'Best Friend from High school and Played  Basketball and Baseball together' },
     { name: 'James Calhoun', role: 'Co-Best Man', side: 'groom', location: 'Jacksonville,Florida', howTheyKnowUs: 'Best Friend since 5th Grade and Played Football and Baseball together ' },
     { name: 'David Green', role: 'Groomsman', side: 'groom', location: 'Gainesville,Florida', howTheyKnowUs: 'Best Friend Since 2nd Grade ' },
-    { name: 'Damarcus Causey', role: 'Groomsman', side: 'groom', location: 'Dallas,Texas', howTheyKnowUs: 'Forth oldest brother' },
+    { name: 'Damarcus Causey', role: 'Groomsman', side: 'groom', location: 'Dallas,Texas', howTheyKnowUs: 'Fourth oldest brother' },
     { name: 'Davinus Causey', role: 'Groomsman', side: 'groom', location: 'Tampa,Florida', howTheyKnowUs: 'Third oldest brother ' },
     { name: 'Brandon Causey', role: 'Groomsman', side: 'groom', location: 'Atlanta,Georgia', howTheyKnowUs: 'Second Oldest brother ' },
     { name: 'Nick Causey', role: 'Groomsman', side: 'groom', location: 'Pensacola,Florida', howTheyKnowUs: 'Oldest Brother' },
