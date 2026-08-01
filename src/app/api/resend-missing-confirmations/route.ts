@@ -2,7 +2,46 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
+// GET /api/resend-missing-confirmations — PREVIEW ONLY (Sends no emails)
+export async function GET() {
+    try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+        if (!supabaseUrl || !supabaseServiceKey) {
+            return NextResponse.json({ error: "Supabase configuration missing" }, { status: 500 });
+        }
+
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+        // Fetch guests where std_responded is true and confirmation_email_sent is false/null
+        const { data: guests, error } = await supabase
+            .from("guests")
+            .select("id, first_name, last_name, email, std_responded, confirmation_email_sent, headcount")
+            .eq("std_responded", true)
+            .or("confirmation_email_sent.eq.false,confirmation_email_sent.is.null");
+
+        if (error) {
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+
+        const previewList = (guests || []).map((guest) => ({
+            guestId: guest.id,
+            name: `${guest.first_name} ${guest.last_name}`,
+            email: guest.email || "NO EMAIL PROVIDED",
+            hasValidEmail: Boolean(guest.email && guest.email.trim()),
+            status: "Pending Backfill",
+        }));
+
+        return NextResponse.json({
+            previewMode: true,
+            totalCount: previewList.length,
+            recipients: previewList,
+        });
+    } catch (err: any) {
+        return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+    }
+}
 export async function POST(req: Request) {
     try {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
