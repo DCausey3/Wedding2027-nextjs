@@ -114,7 +114,7 @@ function HeroSection({
     // Otherwise (Colombia only, both, or undecided) lead with Colombia since it's earlier.
     const heroCountdown =
         attendingFlorida && !attendingColombia
-            ? { date: WEDDING_DATES.usa, label: "Texas — April 30, 2027" }
+            ? { date: WEDDING_DATES.usa, label: "Florida — April 30, 2027" }
             : { date: WEDDING_DATES.colombia, label: "Colombia — June 12, 2027" };
 
     return (
@@ -170,7 +170,7 @@ function HeroSection({
                             <div className="flex justify-center min-w-0">
                                 <CountdownTimer
                                     targetDate={WEDDING_DATES.usa}
-                                    label="Texas"
+                                    label="Florida"
                                     textColor={IVORY}
                                     accentColor={APRICOT}
                                     size="sm"
@@ -278,7 +278,7 @@ function HeroSection({
                         >
                             <CountdownTimer
                                 targetDate={WEDDING_DATES.usa}
-                                label="Texas — April 30, 2027"
+                                label="Florida — April 30, 2027"
                                 textColor={IVORY}
                                 accentColor={APRICOT}
                                 size="sm"
@@ -695,13 +695,13 @@ function WeddingsSection({
                             )}
                             {attendingFlorida && (
                                 <WeddingCard
-                                    title="Marty Leonard Chapel"
+                                    title="Baughman Center"
                                     date="April 30, 2027"
-                                    location="Fort Worth, Texas"
-                                    image="/MartyL.jpeg"
+                                    location="Gainesville, Florida"
+                                    image="/baughman-center.jpg"
                                     accentColor={GREENERY}
                                     bgGradient="linear-gradient(to top, rgba(18,59,84,0.78) 0%, rgba(18,59,84,0.18) 55%, rgba(18,59,84,0) 100%)"
-                                    linkTo="/texas"
+                                    linkTo="/florida"
                                     delay={0.25}
                                 />
                             )}
@@ -728,8 +728,8 @@ function WeddingsSection({
                             )}
                             {attendingFlorida && (
                                 <WeddingCountdownCard
-                                    label="Texas"
-                                    place="Fort Worth, Texas"
+                                    label="Florida"
+                                    place="Gainesville, Florida"
                                     date="April 30, 2027"
                                     targetDate={WEDDING_DATES.usa}
                                     accentColor={GREENERY}
@@ -775,11 +775,11 @@ function RSVPBannerSection({
     const contactAddress = email || phone || null;
 
     const locationCopy = attendingBoth
-        ? "Colombia and Texas"
+        ? "Colombia and Florida"
         : attendingColombia
             ? "Colombia"
             : attendingFlorida
-                ? "Fort Worth, Texas"
+                ? "Gainesville, Florida"
                 : null;
 
     return (

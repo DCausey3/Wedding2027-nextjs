@@ -6,9 +6,12 @@ import Image from "next/image";
 import { MapPin, Calendar, Clock, Shirt, ChevronRight, Plane, Car, Hotel } from 'lucide-react';
 import { CountdownTimer } from '../../../components/ui/CountdownTimer';
 
-const TEXAS_DATE = new Date('2027-04-30T18:00:00'); // ceremony time still TBD — using a placeholder evening time
+const FLORIDA_DATE = new Date('2027-04-30T18:00:00'); // ceremony time still TBD — using a placeholder evening time
 
-const HERO = '/MartyL.jpeg';
+// TODO: add a real photo of the Baughman Center to /public and update this path.
+// (Couldn't pull one in automatically — the venue is a public UF landmark, but
+// hotlinking a photo from search results isn't something I can do for a live site.)
+const HERO = '/baughman-center.jpg';
 
 // Palette — Sky Blue + Apricot + Ivory + Sand
 const SKY_DEEP = "#123B54";
@@ -20,25 +23,24 @@ const APRICOT_LIGHT = "#FFF1E5";
 const GREENERY = "#7FAA6E";
 
 const basicTravelInfo = [
-    { icon: MapPin, label: 'Venue', value: 'Marty Leonard Chapel, Fort Worth, TX' },
+    { icon: MapPin, label: 'Venue', value: 'Baughman Center, Gainesville, FL' },
     { icon: Calendar, label: 'Date', value: 'April 30, 2027' },
-    { icon: Clock, label: 'Time', value: '6:00 pm CST' },
-    { icon: Plane, label: 'Airport', value: 'Fly into DFW (Dallas/Fort Worth Int\'l) or Dallas Love Field' },
+    { icon: Clock, label: 'Time', value: '6:00 pm EST' },
+    { icon: Plane, label: 'Airport', value: 'Fly into GNV (Gainesville Regional Airport), or Orlando (MCO) / Jacksonville (JAX) if you want more flight options' },
     { icon: Car, label: 'Getting Around', value: 'A car or rideshare is recommended once you land' },
     { icon: Hotel, label: 'Lodging', value: 'Hotel block details coming soon' },
 ];
 
-export default function TexasPage() {
+export default function FloridaPage() {
     return (
         <div style={{ backgroundColor: IVORY }}>
             {/* Hero */}
             <div className="relative h-screen min-h-[600px] overflow-hidden flex items-end pb-24">
                 <Image
                     src={HERO}
-                    alt="Texas wedding venue"
+                    alt="Baughman Center, Gainesville, Florida"
                     fill
                     priority
-                    className="object-cover"
                 />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(18,59,84,0.75) 0%, rgba(18,59,84,0.15) 60%, rgba(18,59,84,0) 100%)' }} />
                 <div
@@ -48,7 +50,7 @@ export default function TexasPage() {
                 <div className="relative z-10 max-w-5xl mx-auto px-6 w-full">
                     <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9 }}>
                         <p className="uppercase tracking-widest mb-3" style={{ color: APRICOT, fontSize: '0.6rem', letterSpacing: '0.3em' }}>
-                            Texas Wedding
+                            Florida Wedding
                         </p>
                         <h1
                             style={{
@@ -59,9 +61,9 @@ export default function TexasPage() {
                                 lineHeight: 1.0,
                             }}
                         >
-                            Fort Worth,
+                            Gainesville,
                             <br />
-                            <span style={{ fontStyle: 'italic', color: APRICOT }}>Texas</span>
+                            <span style={{ fontStyle: 'italic', color: APRICOT }}>Florida</span>
                         </h1>
                         <div className="flex flex-wrap items-center gap-6 mt-6">
                             <div className="flex items-center gap-2">
@@ -70,11 +72,11 @@ export default function TexasPage() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <MapPin size={14} style={{ color: APRICOT }} />
-                                <span className="text-sm" style={{ color: IVORY }}>Marty Leonard Chapel</span>
+                                <span className="text-sm" style={{ color: IVORY }}>Baughman Center</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Clock size={14} style={{ color: APRICOT }} />
-                                <span className="text-sm" style={{ color: IVORY }}>6:00pm CST</span>
+                                <span className="text-sm" style={{ color: IVORY }}>6:00pm EST</span>
                             </div>
                         </div>
                     </motion.div>
@@ -87,12 +89,12 @@ export default function TexasPage() {
                 style={{ background: `linear-gradient(to right, ${SKY_DEEP}, ${GREENERY})` }}
             >
                 <p className="uppercase tracking-widest mb-4" style={{ color: 'rgba(255,247,236,0.75)', fontSize: '0.55rem', letterSpacing: '0.3em' }}>
-                    Counting Down To Texas
+                    Counting Down To Florida
                 </p>
-                <CountdownTimer targetDate={TEXAS_DATE} textColor={IVORY} accentColor={APRICOT} size="lg" />
+                <CountdownTimer targetDate={FLORIDA_DATE} textColor={IVORY} accentColor={APRICOT} size="lg" />
             </div>
 
-            {/* Micro-wedding notice */}
+            {/* Intimate wedding notice */}
             <section className="py-16 px-6">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -106,8 +108,9 @@ export default function TexasPage() {
                         A Small, Intimate Celebration
                     </h2>
                     <p className="mt-3 text-sm leading-relaxed" style={{ color: SKY_DEEP, opacity: 0.75 }}>
-                        Our Fort Worth wedding at Marty Leonard Chapel will be a micro-intimate gathering with our
-                        closest family and friends. We're so glad you're part of it.
+                        Our Florida wedding at the Baughman Center, right on Lake Alice at the University of Florida,
+                        will be a micro-intimate gathering with our closest family and friends. We're so glad you're
+                        part of it.
                     </p>
                 </motion.div>
             </section>

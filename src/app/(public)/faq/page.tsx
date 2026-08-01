@@ -68,7 +68,7 @@ const ALL_FAQS = [
     {
         category: "USA Wedding",
         items: [
-            { q: "Which airport should I fly into?", a: "Dallas-Fort Worth International (DFW) is closest, approximately 25 minutes from the venue. Dallas Love Field (DAL) is also an option, ~35 minutes away." },
+            { q: "Which airport should I fly into?", a: "Tampa Airport, Gainesville or Orlando airport" },
             { q: "What is the dress code for the USA wedding?", a: "Black tie / Formal attire. Women: floor-length gowns or formal cocktail dresses. Men: tuxedo or dark formal suit. Bridesmaids in Terracotta; groomsmen in Sand." },
             { q: "Is there parking at the venue?", a: "Yes — complimentary valet parking is available at the venue for all wedding guests." },
         ],
@@ -77,7 +77,7 @@ const ALL_FAQS = [
         category: "Accommodations",
         items: [
             { q: "Where should I stay in Colombia?", a: "We recommend Hotel Sazagua (on the venue grounds) using booking code VALMRC26. Book by October 1st to secure the room block rate.", region: "colombia" },
-            { q: "Where should I stay in Fort Worth?", a: "Hotel and room block details for Fort Worth are coming soon — check back here or reach out to us directly in the meantime.", region: "florida" },
+            { q: "Where should I stay in Gainesville?", a: "Hotel and room block details for Gainesville are coming soon — check back here or reach out to us directly in the meantime.", region: "florida" },
         ],
     },
     {

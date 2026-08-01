@@ -131,7 +131,7 @@ export default function MyDetailsPage() {
         : attendingColombia
             ? "Colombia Wedding"
             : attendingFlorida
-                ? "Fort Worth Wedding"
+                ? "Gainesville Wedding"
                 : "Not Attending";
 
     return (
@@ -255,11 +255,11 @@ export default function MyDetailsPage() {
                             )}
                             {attendingFlorida && (
                                 <WeddingChip
-                                    label="Fort Worth Wedding"
+                                    label="Gainesville Wedding"
                                     date="April 30, 2027"
-                                    location="Fort Worth, Texas"
+                                    location="Gainesville, Florida"
                                     accent={GREENERY}
-                                    icon="FTW"
+                                    icon="GNV"
                                 />
                             )}
                         </div>

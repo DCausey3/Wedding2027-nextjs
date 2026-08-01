@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 
 // Palette — Sky Blue + Apricot + Ivory + Sand
-const NAVY = "#2c3e4a";
+const NAVY = "#123B54"; // SKY_DEEP — kept the variable name NAVY throughout this file to avoid touching every reference
 const IVORY = "#FFF7EC";
 const SAND = "#E6D2B3";
 const SAND_LIGHT = "#F2E8D5";
@@ -46,7 +46,7 @@ function fireConfetti() {
 
 const WEDDING_INFO: Record<string, { label: string; date: string; place: string; color: string; micro?: boolean }> = {
     Colombia: { label: "Colombia Wedding", date: "June 12, 2027", place: "Pereira, Colombia", color: SKY },
-    USA: { label: "Fort Worth Wedding", date: "April 30, 2027", place: "Fort Worth, Texas", color: APRICOT, micro: true },
+    USA: { label: "Gainesville Wedding", date: "April 30, 2027", place: "Gainesville, Florida", color: APRICOT, micro: true },
 };
 
 // What attendance choice is even possible for this guest, based on
@@ -129,7 +129,7 @@ function SaveTheDateContent() {
                     : [];
 
     const isAttendingAnything = attendChoice !== null && attendChoice !== "decline";
-    const includesFortWorth = attendingWeddingKeys.includes("USA");
+    const includesGainesville = attendingWeddingKeys.includes("USA");
 
     // Bridal party declining entirely — we'd like a note since Colombia is our preferred fallback.
     const showDeclineNote = choiceMode === "both-bridal" && attendChoice === "decline";
@@ -252,7 +252,7 @@ function SaveTheDateContent() {
                     {/* Cinematic hero */}
                     <div
                         className="relative rounded-2xl overflow-hidden mb-7 p-7 sm:p-9"
-                        style={{ background: `linear-gradient(140deg, ${NAVY} 0%, #1f2e38 100%)` }}
+                        style={{ background: `linear-gradient(140deg, ${NAVY} 0%, #0a2438 100%)` }}
                     >
                         <div
                             className="absolute inset-0 opacity-[0.14]"
@@ -310,7 +310,7 @@ function SaveTheDateContent() {
                                 >
                                     <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: info.color }}>
                     <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "0.6rem", color: NAVY }}>
-                      {key === "Colombia" ? "COL" : "FTW"}
+                      {key === "Colombia" ? "COL" : "GNV"}
                     </span>
                                     </div>
                                     <div className="flex-1">
@@ -323,7 +323,7 @@ function SaveTheDateContent() {
                         })}
                     </div>
 
-                    {/* Micro-wedding notice — always shown when Fort Worth is in play for this guest */}
+                    {/* Micro-wedding notice — always shown when Gainesville is in play for this guest */}
                     {infoWeddingKeys.includes("USA") && (
                         <div
                             className="rounded-xl p-4 mb-7 flex items-start gap-2.5"
@@ -331,7 +331,7 @@ function SaveTheDateContent() {
                         >
                             <Home size={14} style={{ color: APRICOT, marginTop: 2, flexShrink: 0 }} />
                             <p className="text-xs leading-relaxed" style={{ color: `${NAVY}90` }}>
-                                Our Fort Worth celebration will be a <strong>small, micro-intimate gathering</strong> — due to
+                                Our Gainesville celebration will be a <strong>small, micro-intimate gathering</strong> — due to
                                 space, we unfortunately aren't able to expand this guest list. If a headcount is shown below,
                                 it already includes you.
                             </p>
@@ -413,7 +413,7 @@ function SaveTheDateContent() {
                                         <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.3rem", fontWeight: 400, color: NAVY }}>
                                             Joyfully Accepts Both
                                         </p>
-                                        <p className="text-xs mt-0.5" style={{ color: `${NAVY}68` }}>We'll celebrate with you in Colombia and Fort Worth!</p>
+                                        <p className="text-xs mt-0.5" style={{ color: `${NAVY}68` }}>We'll celebrate with you in Colombia and Gainesville!</p>
                                     </div>
                                 </div>
                             </motion.button>
@@ -457,7 +457,7 @@ function SaveTheDateContent() {
                                 <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.2rem", fontWeight: 400, color: NAVY }}>
                                     🎉 We'll Attend Both
                                 </p>
-                                <p className="text-xs mt-1" style={{ color: `${NAVY}68` }}>Colombia and Fort Worth</p>
+                                <p className="text-xs mt-1" style={{ color: `${NAVY}68` }}>Colombia and Gainesville</p>
                             </motion.button>
 
                             <motion.button
@@ -487,9 +487,9 @@ function SaveTheDateContent() {
                                 }}
                             >
                                 <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.2rem", fontWeight: 400, color: NAVY }}>
-                                    🤠 Fort Worth Only
+                                    🐊 Gainesville Only
                                 </p>
-                                <p className="text-xs mt-1" style={{ color: `${NAVY}68` }}>April 30, 2027 · Texas (micro-intimate)</p>
+                                <p className="text-xs mt-1" style={{ color: `${NAVY}68` }}>April 30, 2027 · Florida (micro-intimate)</p>
                             </motion.button>
 
                             <motion.button
@@ -518,7 +518,7 @@ function SaveTheDateContent() {
                             </p>
                             <p className="text-xs mb-3" style={{ color: `${NAVY}70` }}>
                                 This count already includes you. If your actual party is smaller, please update the number below.
-                                {includesFortWorth && " Fort Worth's guest list is fixed, so please keep this number accurate."}
+                                {includesGainesville && " Gainesville's guest list is fixed, so please keep this number accurate."}
                             </p>
                             <input
                                 type="number"

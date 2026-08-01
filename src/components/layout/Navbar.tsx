@@ -50,7 +50,7 @@ export function Navbar() {
     const navLinks: NavLink[] = [
         ...BASE_LINKS.slice(0, 2), // Home, Our Story
         ...(attendingColombia ? [{ href: "/colombia", label: "Colombia" }] : []),
-        ...(attendingFlorida ? [{ href: "/texas", label: "Texas" }] : []),
+        ...(attendingFlorida ? [{ href: "/florida", label: "Florida" }] : []),
         ...BASE_LINKS.slice(2), // Events, Travel, RSVP, Registry, FAQ, Contact
     ];
 

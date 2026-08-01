@@ -1,8 +1,9 @@
 "use client";
 
-import { ExternalLink, Gift, Plane, Home, Heart, Sparkles, PartyPopper, Send } from "lucide-react";
+import { ExternalLink, Gift, Send, Home, Heart, Sparkles } from "lucide-react";
 import { motion } from "motion/react";
 import { SectionHeader } from "@/components/ui/SectionHeader";
+import { HoneymoonFund } from "@/components/wedding/HoneymoonFund";
 
 // ─── Palette — Sky Blue + Apricot + Ivory + Sand ───────────────────────────
 const SKY_DEEP = "#123B54";
@@ -12,20 +13,11 @@ const SAND_LIGHT = "#F2E8D5";
 const APRICOT = "#FFB482";
 const SKY = "#A4D4F4";
 const SKY_MID = "#5FA8D3";
-const GREENERY = "#7FAA6E";
 
 const REGISTRIES = [
     { store: "Williams-Sonoma", category: "Kitchen & Entertaining", desc: "We love to cook together — help us fill our kitchen with the tools to keep making memories.", url: "https://www.williams-sonoma.com/registry/kmfrskv6lz/registry-list.html", icon: Home, color: SKY_MID, featured: true },
     { store: "Amazon", category: "Everyday Essentials", desc: "Everything else on our list, from small home essentials to a few fun extras.", url: "https://www.amazon.com/wedding/guest-view/1MMDQ63OJ0LY", icon: Gift, color: SKY, featured: true },
 ];
-
-// TODO: drop in your real Honeyfund URL once it's set up.
-const HONEYFUND_URL = "#";
-
-// TODO: if you decide to offer Zelle as a no-fee alternative, fill these in
-// and set SHOW_ZELLE to true. Leave false to hide the card entirely.
-const SHOW_ZELLE = false;
-const ZELLE_HANDLE = "your-email@example.com or (555) 000-0000";
 
 export default function RegistryPage() {
     return (
@@ -84,59 +76,8 @@ export default function RegistryPage() {
                 <p className="mt-4 text-sm" style={{ color: `${SKY_DEEP}66` }}>— Jhoana &amp; Damariel</p>
             </section>
 
-            {/* Honeymoon Fund — spotlight card, separate from the "stuff" registries */}
-            <section className="px-6 pb-4">
-                <div className="container-wedding mx-auto max-w-3xl">
-                    <motion.div
-                        initial={{ opacity: 0, y: 24 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.7 }}
-                        className="relative overflow-hidden rounded-3xl p-8 sm:p-10 text-center"
-                        style={{ background: `linear-gradient(135deg, ${SKY_DEEP} 0%, #0a2438 100%)` }}
-                    >
-                        <div
-                            className="absolute inset-0 opacity-25"
-                            style={{ backgroundImage: `radial-gradient(circle at 15% 30%, ${APRICOT} 0%, transparent 45%), radial-gradient(circle at 85% 70%, ${SKY} 0%, transparent 45%)` }}
-                        />
-                        <div className="relative z-10">
-                            <div
-                                className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
-                                style={{ backgroundColor: APRICOT }}
-                            >
-                                <Plane size={24} style={{ color: SKY_DEEP }} />
-                            </div>
-                            <p className="uppercase tracking-widest mb-3" style={{ color: APRICOT, fontSize: "0.6rem", letterSpacing: "0.25em" }}>
-                                Where We'd Rather Spend It
-                            </p>
-                            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(1.8rem, 5vw, 2.6rem)", fontWeight: 300, color: IVORY, lineHeight: 1.15 }}>
-                                Send us on our <span className="italic" style={{ color: APRICOT }}>honeymoon</span>
-                            </h2>
-                            <p className="mt-3 max-w-md mx-auto text-sm leading-relaxed" style={{ color: "rgba(255,247,236,0.7)" }}>
-                                Skip the toaster — help us fund sunsets, questionable amounts of local food, and at least
-                                one activity we'll definitely regret two days later.
-                            </p>
-                            <a
-                                href={HONEYFUND_URL}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 mt-7 px-8 py-3.5 rounded-full text-xs uppercase tracking-widest transition-all hover:opacity-90"
-                                style={{ backgroundColor: APRICOT, color: SKY_DEEP, letterSpacing: "0.18em" }}
-                            >
-                                <PartyPopper size={14} />
-                                Contribute on Honeyfund
-                            </a>
-
-                            {SHOW_ZELLE && (
-                                <p className="mt-5 text-xs" style={{ color: "rgba(255,247,236,0.55)" }}>
-                                    Prefer no platform fees? You can also send directly via Zelle to{" "}
-                                    <span style={{ color: APRICOT }}>{ZELLE_HANDLE}</span>.
-                                </p>
-                            )}
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
+            {/* Honeymoon Fund — built into the site, Stripe-powered */}
+            <HoneymoonFund />
 
             {/* Registry cards — the "stuff" registries */}
             <section className="section-pad" style={{ backgroundColor: SAND_LIGHT }}>
