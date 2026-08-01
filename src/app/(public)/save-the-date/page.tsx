@@ -4,11 +4,11 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-    Heart, Loader2, CheckCircle, Calendar, Sparkles, Bell, Gift, Mail, Phone as PhoneIcon, Home,
+    Heart, Loader2, CheckCircle, Calendar, Sparkles, Bell, Gift, Mail, Phone as PhoneIcon, Home, MapPin,
 } from "lucide-react";
 
 // Palette — Sky Blue + Apricot + Ivory + Sand
-const NAVY = "#123B54"; // SKY_DEEP — kept the variable name NAVY throughout this file to avoid touching every reference
+const NAVY = "#123B54"; // SKY_DEEP
 const IVORY = "#FFF7EC";
 const SAND = "#E6D2B3";
 const SAND_LIGHT = "#F2E8D5";
@@ -28,6 +28,7 @@ type Guest = {
     invitationType?: string | null;
     phone?: string | null;
     email?: string | null;
+    mailingAddress?: string | null;
 };
 
 function isBridalParty(guest: Guest) {
@@ -49,15 +50,12 @@ const WEDDING_INFO: Record<string, { label: string; date: string; place: string;
     USA: { label: "Gainesville Wedding", date: "April 30, 2027", place: "Gainesville, Florida", color: APRICOT, micro: true },
 };
 
-// What attendance choice is even possible for this guest, based on
-// selectedWedding + role.
 type AttendChoice = "both" | "colombia" | "usa" | "decline" | null;
 
-function getChoiceMode(guest: Guest): "single-colombia" | "single-usa" | "both-bridal" | "both-family" {
+function getChoiceMode(guest: Guest): "single-colombia" | "single-usa" | "both-choice" {
     if (guest.selectedWedding === "Colombia") return "single-colombia";
     if (guest.selectedWedding === "USA") return "single-usa";
-    // selectedWedding === "Both"
-    return isBridalParty(guest) ? "both-bridal" : "both-family";
+    return "both-choice";
 }
 
 function SaveTheDateContent() {
@@ -71,6 +69,7 @@ function SaveTheDateContent() {
     const [headcount, setHeadcount] = useState(1);
     const [phone, setPhone] = useState("");
     const [email, setEmail] = useState("");
+    const [mailingAddress, setMailingAddress] = useState("");
     const [smsConsent, setSmsConsent] = useState(false);
     const [declineNote, setDeclineNote] = useState("");
     const [submitting, setSubmitting] = useState(false);
@@ -90,6 +89,7 @@ function SaveTheDateContent() {
                     setHeadcount(parsed.plusOneAllowed && parsed.plusOneCount ? parsed.plusOneCount + 1 : 1);
                     setPhone(parsed.phone ?? "");
                     setEmail(parsed.email ?? "");
+                    setMailingAddress(parsed.mailingAddress ?? "");
                     return;
                 }
             } catch {
@@ -112,8 +112,6 @@ function SaveTheDateContent() {
         }
     }, [bridal]);
 
-    // Which wedding cards to show informationally (before/regardless of their choice) —
-    // i.e. what this guest is eligible for.
     const infoWeddingKeys =
         guest?.selectedWedding === "Both"
             ? ["Colombia", "USA"]
@@ -121,7 +119,6 @@ function SaveTheDateContent() {
                 ? [guest.selectedWedding]
                 : [];
 
-    // Which weddings the guest is actually committing to attend, based on attendChoice.
     const attendingWeddingKeys: string[] =
         attendChoice === "both" ? ["Colombia", "USA"]
             : attendChoice === "colombia" ? ["Colombia"]
@@ -131,13 +128,14 @@ function SaveTheDateContent() {
     const isAttendingAnything = attendChoice !== null && attendChoice !== "decline";
     const includesGainesville = attendingWeddingKeys.includes("USA");
 
-    // Bridal party declining entirely — we'd like a note since Colombia is our preferred fallback.
-    const showDeclineNote = choiceMode === "both-bridal" && attendChoice === "decline";
+    const showDeclineNote = choiceMode === "both-choice" && attendChoice === "decline";
 
     const maxHeadcount = guest?.plusOneAllowed && guest.plusOneCount
         ? guest.plusOneCount + 1
         : 1;
     const showHeadcountBlock = guest?.plusOneAllowed && (guest?.plusOneCount ?? 0) > 0;
+
+    const showMailingAddress = isAttendingAnything && includesGainesville;
 
     const canSubmit =
         attendChoice !== null &&
@@ -157,6 +155,7 @@ function SaveTheDateContent() {
                     headcount: isAttendingAnything ? headcount : 0,
                     phone: isAttendingAnything ? phone : undefined,
                     email: isAttendingAnything ? email : undefined,
+                    mailingAddress: showMailingAddress ? mailingAddress : undefined,
                     smsConsent: isAttendingAnything ? smsConsent : false,
                     declineNote: showDeclineNote ? declineNote : undefined,
                 }),
@@ -171,8 +170,31 @@ function SaveTheDateContent() {
                     stdResponded: true,
                     stdAttendingColombia: attendingWeddingKeys.includes("Colombia"),
                     stdAttendingFlorida: attendingWeddingKeys.includes("USA"),
+                    mailingAddress: showMailingAddress ? mailingAddress : guest.mailingAddress,
                 })
             );
+
+            // Fire-and-forget notification — fires on EVERY response (attending or
+            // declining) so you two get notified either way; the route itself
+            // decides whether to also send the guest-facing confirmation.
+            fetch("/api/send-confirmation-email", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    guestId: guest.id,
+                    firstName: guest.firstName,
+                    lastName: guest.lastName,
+                    email: email.trim() || guest.email || undefined,
+                    phone: phone.trim() || guest.phone || undefined,
+                    attending: isAttendingAnything,
+                    attendingWeddings: attendingWeddingKeys,
+                    headcount: isAttendingAnything ? headcount : 0,
+                    mailingAddress: showMailingAddress ? mailingAddress.trim() : undefined,
+                    smsConsent: isAttendingAnything ? smsConsent : false,
+                    declineNote: showDeclineNote ? declineNote.trim() : undefined,
+                    bridal,
+                }),
+            }).catch((e) => console.error("Notification email failed to send:", e));
 
             if (isAttendingAnything) fireConfetti();
             setDone(true);
@@ -230,6 +252,12 @@ function SaveTheDateContent() {
                     <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.9rem", fontWeight: 300, color: NAVY }}>
                         {isAttendingAnything ? "Thank you, we can't wait!" : "We'll miss you"}
                     </h2>
+                    {isAttendingAnything && email.trim() && (
+                        <p className="mt-3 text-xs leading-relaxed" style={{ color: `${NAVY}68` }}>
+                            We've sent a confirmation to <span style={{ color: NAVY, fontWeight: 500 }}>{email.trim()}</span> with
+                            everything you need to stay in the loop.
+                        </p>
+                    )}
                     {!isAttendingAnything && (
                         <div className="mt-4 flex items-start gap-2.5 text-left p-4 rounded-xl" style={{ backgroundColor: SAND_LIGHT }}>
                             <Gift size={15} style={{ color: APRICOT, marginTop: 2, flexShrink: 0 }} />
@@ -286,8 +314,8 @@ function SaveTheDateContent() {
                                 style={{ color: "rgba(255,247,236,0.72)" }}
                             >
                                 {bridal
-                                    ? "We are so glad to have you as part of the bridal party. We're having two celebrations and would love to have you at both — if you're only able to make one, we'd love for it to be Colombia, but please just let us know."
-                                    : choiceMode === "both-family"
+                                    ? "We are so glad to have you as part of the bridal party. We're having two celebrations and would love to have you at both — but we know travel and life happen, so let us know what works for you."
+                                    : choiceMode === "both-choice"
                                         ? "Jhoana and Damariel are so excited to celebrate with you. We're having two celebrations — please let us know which you'll be able to join."
                                         : "Jhoana and Damariel are so excited to celebrate with you. Please confirm whether you'll be able to join us."}
                             </motion.p>
@@ -297,7 +325,7 @@ function SaveTheDateContent() {
                         </div>
                     </div>
 
-                    {/* Wedding date cards — informational, shown regardless of choice made yet */}
+                    {/* Wedding date cards */}
                     <div className="space-y-2.5 mb-3">
                         {infoWeddingKeys.map((key) => {
                             const info = WEDDING_INFO[key];
@@ -323,7 +351,6 @@ function SaveTheDateContent() {
                         })}
                     </div>
 
-                    {/* Micro-wedding notice — always shown when Gainesville is in play for this guest */}
                     {infoWeddingKeys.includes("USA") && (
                         <div
                             className="rounded-xl p-4 mb-7 flex items-start gap-2.5"
@@ -338,7 +365,6 @@ function SaveTheDateContent() {
                         </div>
                     )}
 
-                    {/* Intimate guest list disclaimer (general) */}
                     <div className="rounded-xl p-4 mb-7 flex items-start gap-2.5" style={{ backgroundColor: `${NAVY}05`, border: `1px solid ${NAVY}10` }}>
                         <Heart size={13} style={{ color: `${NAVY}55`, marginTop: 2, flexShrink: 0 }} />
                         <p className="text-xs leading-relaxed" style={{ color: `${NAVY}75` }}>
@@ -347,7 +373,6 @@ function SaveTheDateContent() {
                         </p>
                     </div>
 
-                    {/* Attendance — single wedding (Colombia only or USA only) */}
                     {(choiceMode === "single-colombia" || choiceMode === "single-usa") && (
                         <div className="space-y-3 mb-6">
                             <motion.button
@@ -394,55 +419,7 @@ function SaveTheDateContent() {
                         </div>
                     )}
 
-                    {/* Attendance — bridal party, Both (all-or-nothing, Colombia preferred fallback) */}
-                    {choiceMode === "both-bridal" && (
-                        <div className="space-y-3 mb-6">
-                            <motion.button
-                                whileHover={{ scale: 1.01 }}
-                                whileTap={{ scale: 0.99 }}
-                                onClick={() => setAttendChoice("both")}
-                                className="w-full rounded-2xl p-5 text-left transition-all"
-                                style={{
-                                    border: `2px solid ${attendChoice === "both" ? "#ec4899" : `${NAVY}12`}`,
-                                    backgroundColor: attendChoice === "both" ? "#ec489914" : "#fff",
-                                }}
-                            >
-                                <div className="flex items-center gap-4">
-                                    <span className="text-2xl">🎉</span>
-                                    <div>
-                                        <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.3rem", fontWeight: 400, color: NAVY }}>
-                                            Joyfully Accepts Both
-                                        </p>
-                                        <p className="text-xs mt-0.5" style={{ color: `${NAVY}68` }}>We'll celebrate with you in Colombia and Gainesville!</p>
-                                    </div>
-                                </div>
-                            </motion.button>
-
-                            <motion.button
-                                whileHover={{ scale: 1.01 }}
-                                whileTap={{ scale: 0.99 }}
-                                onClick={() => setAttendChoice("decline")}
-                                className="w-full rounded-2xl p-5 text-left transition-all"
-                                style={{
-                                    border: `2px solid ${attendChoice === "decline" ? MUTED : `${NAVY}12`}`,
-                                    backgroundColor: attendChoice === "decline" ? SAND_LIGHT : "#fff",
-                                }}
-                            >
-                                <div className="flex items-center gap-4">
-                                    <span className="text-2xl">🌸</span>
-                                    <div>
-                                        <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.3rem", fontWeight: 400, color: NAVY }}>
-                                            Can't Make Either
-                                        </p>
-                                        <p className="text-xs mt-0.5" style={{ color: `${NAVY}68` }}>We'll miss you — let us know below if that changes.</p>
-                                    </div>
-                                </div>
-                            </motion.button>
-                        </div>
-                    )}
-
-                    {/* Attendance — family, Both (free choice: Colombia only / USA only / Both / decline) */}
-                    {choiceMode === "both-family" && (
+                    {choiceMode === "both-choice" && (
                         <div className="grid grid-cols-1 gap-3 mb-6">
                             <motion.button
                                 whileHover={{ scale: 1.01 }}
@@ -450,14 +427,19 @@ function SaveTheDateContent() {
                                 onClick={() => setAttendChoice("both")}
                                 className="w-full rounded-2xl p-5 text-left transition-all"
                                 style={{
-                                    border: `2px solid ${attendChoice === "both" ? APRICOT : `${NAVY}12`}`,
-                                    backgroundColor: attendChoice === "both" ? `${APRICOT}14` : "#fff",
+                                    border: `2px solid ${attendChoice === "both" ? (bridal ? "#ec4899" : APRICOT) : `${NAVY}12`}`,
+                                    backgroundColor: attendChoice === "both" ? (bridal ? "#ec489914" : `${APRICOT}14`) : "#fff",
                                 }}
                             >
-                                <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.2rem", fontWeight: 400, color: NAVY }}>
-                                    🎉 We'll Attend Both
-                                </p>
-                                <p className="text-xs mt-1" style={{ color: `${NAVY}68` }}>Colombia and Gainesville</p>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-2xl">🎉</span>
+                                    <div>
+                                        <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.2rem", fontWeight: 400, color: NAVY }}>
+                                            We'll Attend Both
+                                        </p>
+                                        <p className="text-xs mt-0.5" style={{ color: `${NAVY}68` }}>Colombia and Gainesville — our favorite answer!</p>
+                                    </div>
+                                </div>
                             </motion.button>
 
                             <motion.button
@@ -510,7 +492,6 @@ function SaveTheDateContent() {
                         </div>
                     )}
 
-                    {/* Headcount — only when attending something with plus-ones allowed */}
                     {isAttendingAnything && showHeadcountBlock && (
                         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl p-5 mb-5" style={{ backgroundColor: "#fff", border: `1px solid ${SAND}` }}>
                             <p className="text-[0.6rem] uppercase tracking-[0.18em] mb-2" style={{ color: `${NAVY}60` }}>
@@ -535,7 +516,6 @@ function SaveTheDateContent() {
                         </motion.div>
                     )}
 
-                    {/* Contact info — required when attending something */}
                     {isAttendingAnything && (
                         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl p-5 mb-5 space-y-4" style={{ backgroundColor: "#fff", border: `1px solid ${SAND}` }}>
                             <p className="text-[0.6rem] uppercase tracking-[0.18em]" style={{ color: `${NAVY}60` }}>
@@ -573,7 +553,25 @@ function SaveTheDateContent() {
                                 />
                             </div>
 
-                            {/* SMS consent toggle */}
+                            {showMailingAddress && (
+                                <div>
+                                    <label className="flex items-center gap-2 text-[0.6rem] uppercase tracking-[0.16em] mb-2" style={{ color: `${NAVY}60` }}>
+                                        <MapPin size={11} style={{ color: APRICOT }} /> Mailing Address
+                                    </label>
+                                    <p className="text-[0.68rem] -mt-1 mb-2" style={{ color: `${NAVY}60` }}>
+                                        We'll use this to send your formal RSVP invitation and, later, a thank-you card.
+                                    </p>
+                                    <textarea
+                                        rows={2}
+                                        value={mailingAddress}
+                                        onChange={(e) => setMailingAddress(e.target.value)}
+                                        placeholder="Street address, city, state, ZIP"
+                                        className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
+                                        style={{ backgroundColor: SAND_LIGHT, border: "1.5px solid transparent", color: NAVY }}
+                                    />
+                                </div>
+                            )}
+
                             <div className="flex items-start justify-between gap-4 pt-2 border-t" style={{ borderColor: SAND }}>
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${APRICOT}22` }}>
@@ -606,7 +604,6 @@ function SaveTheDateContent() {
                         </motion.div>
                     )}
 
-                    {/* Decline reason — bridal party declining both only */}
                     {showDeclineNote && (
                         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl p-5 mb-5" style={{ backgroundColor: "#fff", border: `1px solid ${SAND}` }}>
                             <label className="text-[0.6rem] uppercase tracking-[0.18em] mb-2 block" style={{ color: `${NAVY}60` }}>
@@ -614,7 +611,6 @@ function SaveTheDateContent() {
                             </label>
                             <p className="text-xs mb-3" style={{ color: `${NAVY}70` }}>
                                 If there's a reason you're unable to join — travel, health, or otherwise — feel free to share.
-                                And if there's any chance you could still make it to just one celebration, let us know here too.
                             </p>
                             <textarea
                                 rows={3}
@@ -646,7 +642,6 @@ function SaveTheDateContent() {
                         </motion.button>
                     )}
 
-                    {/* Always-visible contact line */}
                     <p className="text-center text-xs mt-8" style={{ color: `${NAVY}55` }}>
                         Questions? Reach out to us anytime — we're happy to help.
                     </p>

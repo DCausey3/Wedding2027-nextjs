@@ -5,7 +5,7 @@ import { getGuestById } from "@/lib/data-client";
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { guestId, attending, attendingWeddings, headcount, phone, email, smsConsent, declineNote } = body;
+        const { guestId, attending, attendingWeddings, headcount, phone, email, mailingAddress, smsConsent, declineNote } = body;
 
         if (!guestId || typeof attending !== "boolean") {
             return NextResponse.json(
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
         // that only tells you what they were ELIGIBLE for, not what they chose.
         const weddingKeys: string[] = Array.isArray(attendingWeddings) ? attendingWeddings : [];
         const wantsColombia = attending && weddingKeys.includes("Colombia");
-        const wantsFlorida = attending && weddingKeys.includes("USA"); // NOTE: DB column stays "florida" — this is the Texas/Fort Worth wedding, we're just not renaming the column.
+        const wantsFlorida = attending && weddingKeys.includes("USA"); // NOTE: DB column stays "florida" — this is the Gainesville wedding, we're just not renaming the column.
 
         const guest = await getGuestById(guestId);
         if (!guest) {
@@ -55,6 +55,13 @@ export async function POST(req: NextRequest) {
             updates.phone = phone.trim();
             updates.email = email.trim();
             updates.sms_consent = !!smsConsent;
+        }
+
+        // Mailing address — only meaningful for Gainesville attendees (that's who
+        // gets a physical RSVP + thank-you card later), but store whatever's
+        // actually passed rather than re-deriving eligibility here.
+        if (typeof mailingAddress === "string" && mailingAddress.trim()) {
+            updates.mailing_address = mailingAddress.trim();
         }
 
         // Decline reason — only meaningful for Colombia declines (per scope),
