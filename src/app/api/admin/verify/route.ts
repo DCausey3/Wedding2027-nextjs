@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Initialize Supabase client
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY! // Use service key to bypass RLS for admin checks, or ANON key if standard select policy is enabled
-);
+// Prevent Next.js from attempting static evaluation during build phase
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
     try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !supabaseServiceKey) {
+            console.error("Missing Supabase env variables in runtime environment");
+            return NextResponse.json({ authorized: false, error: "Server configuration error" }, { status: 500 });
+        }
+
+        // Initialize client inside the request handler
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
         const { email } = await req.json();
 
         if (!email) {
