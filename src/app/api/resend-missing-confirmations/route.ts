@@ -17,7 +17,7 @@ export async function GET() {
         // Fetch guests where std_responded is true and confirmation_email_sent is false/null
         const { data: guests, error } = await supabase
             .from("guests")
-            .select("id, first_name, last_name, email, std_responded, confirmation_email_sent, headcount")
+            .select("id, first_name, last_name, email, std_responded, confirmation_email_sent, plus_one_count")
             .eq("std_responded", true)
             .or("confirmation_email_sent.eq.false,confirmation_email_sent.is.null");
 
