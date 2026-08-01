@@ -25,20 +25,20 @@ interface Member {
 // No "attending which wedding" info shown here on purpose, since some
 // bridal party members will only be at one location.
 const BRIDAL_PARTY: Member[] = [
-    { name: 'Vivi Cardenas', role: 'Matron of Honor', side: 'bride', location: 'City, State/Country', howTheyKnowUs: 'Cousins wife who became an older sister' },
-    { name: 'Tori Levy', role: 'Co-Maid of Honor', side: 'bride', location: 'City, State/Country', howTheyKnowUs: 'Childhood best friend of the bride' },
-    { name: 'Angelica Guinand', role: 'Co-Maid of Honor', side: 'bride', location: 'City, State/Country', howTheyKnowUs: 'Childhood best friend of the bride' },
-    { name: 'Alejandra Cardenas', role: 'Bridesmaid', side: 'bride', location: 'City, State/Country', howTheyKnowUs: 'Twin sister' },
-    { name: 'Anabelle Manriquez', role: 'Bridesmaid', side: 'bride', location: 'City, State/Country', howTheyKnowUs: 'Family friend' },
-    { name: 'Angelica Peregrino', role: 'Bridesmaid', side: 'bride', location: 'City, State/Country', howTheyKnowUs: 'Sister in law' },
-    { name: 'Andrea Figueroa', role: 'Bridesmaid', side: 'bride', location: 'City, State/Country', howTheyKnowUs: 'Family friend' },
-    { name: 'Steve Atkins', role: 'Co-Best Man', side: 'groom', location: 'City, State/Country', howTheyKnowUs: 'Best Friend from High school and Played  Basketball and Baseball together' },
-    { name: 'James Calhoun', role: 'Co-Best Man', side: 'groom', location: 'City, State/Country', howTheyKnowUs: 'Best Friend since 5th Grade and Played Football and Baseball together ' },
-    { name: 'David Green', role: 'Groomsman', side: 'groom', location: 'City, State/Country', howTheyKnowUs: 'Best Friend Since 2nd Grade ' },
-    { name: 'Damarcus Causey', role: 'Groomsman', side: 'groom', location: 'City, State/Country', howTheyKnowUs: 'Forth oldest brother' },
-    { name: 'Davinus Causey', role: 'Groomsman', side: 'groom', location: 'City, State/Country', howTheyKnowUs: 'Third oldest brother ' },
-    { name: 'Brandon Causey', role: 'Groomsman', side: 'groom', location: 'City, State/Country', howTheyKnowUs: 'Second Oldest brother ' },
-    { name: 'Nick Causey', role: 'Groomsman', side: 'groom', location: 'City, State/Country', howTheyKnowUs: 'Oldest Brother' },
+    { name: 'Vivi Cardenas', role: 'Matron of Honor', side: 'bride', location: 'Atlanta Georgia', howTheyKnowUs: 'Cousins wife who became an older sister' },
+    { name: 'Tori Levy', role: 'Co-Maid of Honor', side: 'bride', location: 'Tampa, Florida', howTheyKnowUs: 'Childhood best friend of the bride' },
+    { name: 'Angelica Guinand', role: 'Co-Maid of Honor', side: 'bride', location: 'Tampa, Florida', howTheyKnowUs: 'Childhood best friend of the bride' },
+    { name: 'Alejandra Cardenas', role: 'Bridesmaid', side: 'bride', location: 'Tampa, Florida', howTheyKnowUs: 'Twin sister' },
+    { name: 'Anabelle Manriquez', role: 'Bridesmaid', side: 'bride', location: 'Tampa, Florida', howTheyKnowUs: 'Family friend' },
+    { name: 'Angelica Peregrino', role: 'Bridesmaid', side: 'bride', location: 'Dallas,Texas', howTheyKnowUs: 'Sister in law' },
+    { name: 'Andrea Figueroa', role: 'Bridesmaid', side: 'bride', location: 'Tampa, Florida', howTheyKnowUs: 'Family friend' },
+    { name: 'Steve Atkins', role: 'Co-Best Man', side: 'groom', location: 'Orlando,Florida', howTheyKnowUs: 'Best Friend from High school and Played  Basketball and Baseball together' },
+    { name: 'James Calhoun', role: 'Co-Best Man', side: 'groom', location: 'Jacksonville,Florida', howTheyKnowUs: 'Best Friend since 5th Grade and Played Football and Baseball together ' },
+    { name: 'David Green', role: 'Groomsman', side: 'groom', location: 'Gainesville,Florida', howTheyKnowUs: 'Best Friend Since 2nd Grade ' },
+    { name: 'Damarcus Causey', role: 'Groomsman', side: 'groom', location: 'Dallas,Texas', howTheyKnowUs: 'Forth oldest brother' },
+    { name: 'Davinus Causey', role: 'Groomsman', side: 'groom', location: 'Tampa,Florida', howTheyKnowUs: 'Third oldest brother ' },
+    { name: 'Brandon Causey', role: 'Groomsman', side: 'groom', location: 'Atlanta,Georgia', howTheyKnowUs: 'Second Oldest brother ' },
+    { name: 'Nick Causey', role: 'Groomsman', side: 'groom', location: 'Pensacola,Florida', howTheyKnowUs: 'Oldest Brother' },
 ];
 
 // Distinct accent per person, cycling through the palette so the grid
