@@ -1,0 +1,21 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        # Inject Amplify environment variables into .env.production for Next.js SSR
+        - env | grep -e SES_ >> .env.production
+        - env | grep -e SUPABASE_ >> .env.production
+        - env | grep -e NEXT_PUBLIC_ >> .env.production
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
