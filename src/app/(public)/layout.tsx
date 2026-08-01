@@ -11,14 +11,14 @@ export default function PublicLayout({
 }) {
     const pathname = usePathname();
 
-    // "/" is the guest login screen — no nav/footer to show yet.
-    const isLoginPage = pathname === "/";
+    // Hides navbar/footer if the pathname is "/save-the-date" (ignores query parameters)
+    const isSaveTheDatePage = pathname.startsWith("/save-the-date");
 
     return (
         <>
-            {!isLoginPage && <Navbar />}
+            {!isSaveTheDatePage && <Navbar />}
             <main id="main-content">{children}</main>
-            {!isLoginPage && <Footer />}
+            {!isSaveTheDatePage && <Footer />}
         </>
     );
 }
