@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
  *    you're fully unblocked — no waiting on recipient verification.
  * 3. `npm install @aws-sdk/client-ses` (skip if already installed).
  * 4. Env vars (.env.local + hosting provider):
- *      AWS_REGION            e.g. "us-east-2"
+ *      AWS_REGION            e.g. "us-east-1"
  *      AWS_ACCESS_KEY_ID
  *      AWS_SECRET_ACCESS_KEY
  *    Scope these to an IAM user/role with ses:SendEmail only.
@@ -193,10 +193,13 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "guestId and attending are required" }, { status: 400 });
         }
 
-        const hasCreds = process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY;
+        // NOTE: using SES_* env var names, not AWS_* — Amplify reserves the
+        // "AWS" prefix for its own runtime-injected credentials and will
+        // reject any env var starting with it.
+        const hasCreds = process.env.SES_ACCESS_KEY_ID && process.env.SES_SECRET_ACCESS_KEY;
         if (!hasCreds) {
             // Don't hard-fail the RSVP flow just because email isn't configured yet.
-            console.warn("AWS SES credentials not set — skipping confirmation/notification emails.");
+            console.warn("SES credentials not set — skipping confirmation/notification emails.");
             return NextResponse.json({ skipped: true, reason: "Email not configured yet" });
         }
 
@@ -205,10 +208,10 @@ export async function POST(req: NextRequest) {
         const { SESClient, SendEmailCommand } = await import("@aws-sdk/client-ses");
 
         const ses = new SESClient({
-            region: process.env.AWS_REGION || "us-east-2",
+            region: process.env.SES_REGION || "us-east-2",
             credentials: {
-                accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+                accessKeyId: process.env.SES_ACCESS_KEY_ID!,
+                secretAccessKey: process.env.SES_SECRET_ACCESS_KEY!,
             },
         });
 
