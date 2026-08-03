@@ -256,7 +256,7 @@ export default function MyDetailsPage() {
                             {attendingFlorida && (
                                 <WeddingChip
                                     label="Gainesville Wedding"
-                                    date="April 30, 2027"
+                                    date="April 24, 2027"
                                     location="Gainesville, Florida"
                                     accent={GREENERY}
                                     icon="GNV"

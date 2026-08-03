@@ -114,7 +114,7 @@ function HeroSection({
     // Otherwise (Colombia only, both, or undecided) lead with Colombia since it's earlier.
     const heroCountdown =
         attendingFlorida && !attendingColombia
-            ? { date: WEDDING_DATES.usa, label: "Florida — April 30, 2027" }
+            ? { date: WEDDING_DATES.usa, label: "Florida — April 24, 2027" }
             : { date: WEDDING_DATES.colombia, label: "Colombia — June 12, 2027" };
 
     return (
@@ -278,7 +278,7 @@ function HeroSection({
                         >
                             <CountdownTimer
                                 targetDate={WEDDING_DATES.usa}
-                                label="Florida — April 30, 2027"
+                                label="Florida — April 24, 2027"
                                 textColor={IVORY}
                                 accentColor={APRICOT}
                                 size="sm"
@@ -696,7 +696,7 @@ function WeddingsSection({
                             {attendingFlorida && (
                                 <WeddingCard
                                     title="Baughman Center"
-                                    date="April 30, 2027"
+                                    date="April 24, 2027"
                                     location="Gainesville, Florida"
                                     image="/baughman-center.jpg"
                                     accentColor={GREENERY}
@@ -730,7 +730,7 @@ function WeddingsSection({
                                 <WeddingCountdownCard
                                     label="Florida"
                                     place="Gainesville, Florida"
-                                    date="April 30, 2027"
+                                    date="April 24, 2027"
                                     targetDate={WEDDING_DATES.usa}
                                     accentColor={GREENERY}
                                     accentColorDark={GREENERY_DARK}

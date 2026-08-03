@@ -47,7 +47,7 @@ function fireConfetti() {
 
 const WEDDING_INFO: Record<string, { label: string; date: string; place: string; color: string; micro?: boolean }> = {
     Colombia: { label: "Colombia Wedding", date: "June 12, 2027", place: "Pereira, Colombia", color: SKY },
-    USA: { label: "Gainesville Wedding", date: "April 30, 2027", place: "Gainesville, Florida", color: APRICOT, micro: true },
+    USA: { label: "Gainesville Wedding", date: "April 24, 2027", place: "Gainesville, Florida", color: APRICOT, micro: true },
 };
 
 type AttendChoice = "both" | "colombia" | "usa" | "decline" | null;
@@ -487,7 +487,7 @@ function SaveTheDateContent() {
                                 <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.2rem", fontWeight: 400, color: NAVY }}>
                                     🐊 Gainesville Only
                                 </p>
-                                <p className="text-xs mt-1" style={{ color: `${NAVY}68` }}>April 30, 2027 · Florida (micro-intimate)</p>
+                                <p className="text-xs mt-1" style={{ color: `${NAVY}68` }}>April 24, 2027 · Florida (micro-intimate)</p>
                             </motion.button>
 
                             <motion.button

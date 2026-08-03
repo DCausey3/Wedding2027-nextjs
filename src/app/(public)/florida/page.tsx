@@ -24,7 +24,7 @@ const GREENERY = "#7FAA6E";
 
 const basicTravelInfo = [
     { icon: MapPin, label: 'Venue', value: 'Baughman Center, Gainesville, FL' },
-    { icon: Calendar, label: 'Date', value: 'April 30, 2027' },
+    { icon: Calendar, label: 'Date', value: 'April 24, 2027' },
     { icon: Clock, label: 'Time', value: '6:00 pm EST' },
     { icon: Plane, label: 'Airport', value: 'Fly into GNV (Gainesville Regional Airport), or Orlando (MCO) / Jacksonville (JAX) if you want more flight options' },
     { icon: Car, label: 'Getting Around', value: 'A car or rideshare is recommended once you land' },
@@ -68,7 +68,7 @@ export default function FloridaPage() {
                         <div className="flex flex-wrap items-center gap-6 mt-6">
                             <div className="flex items-center gap-2">
                                 <Calendar size={14} style={{ color: APRICOT }} />
-                                <span className="text-sm" style={{ color: IVORY }}>April 30, 2027</span>
+                                <span className="text-sm" style={{ color: IVORY }}>April 24, 2027</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <MapPin size={14} style={{ color: APRICOT }} />

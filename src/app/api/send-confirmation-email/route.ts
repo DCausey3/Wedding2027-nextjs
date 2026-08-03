@@ -8,7 +8,7 @@ const SITE_URL = "https://causeycardenasforever.com";
 
 const WEDDING_LABELS: Record<string, string> = {
     Colombia: "Colombia — June 12, 2027 · Pereira",
-    USA: "Gainesville — April 30, 2027 · Baughman Center",
+    USA: "Gainesville — April 24, 2027 · Baughman Center",
 };
 
 // ---------- Guest Email Templates ----------
