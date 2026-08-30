@@ -613,7 +613,10 @@ function SaveTheDateContent() {
                                 </button>
                             </div>
                             <p className="text-[0.58rem] leading-relaxed" style={{ color: `${NAVY}50` }}>
-                                By enabling, you agree to receive text messages from Causey/Cardenas Wedding, including save-the-date announcements, RSVP reminders, and travel updates. Message frequency varies (approx. 2–5 messages). Msg &amp; data rates may apply. Reply STOP to cancel, HELP for help.
+                                By enabling, you agree to receive text messages from Causey/Cardenas Wedding, including save-the-date announcements, RSVP reminders, and travel updates. Message frequency varies (approx. 2–5 messages). Msg &amp; data rates may apply. Reply STOP to cancel, HELP for help. See our{" "}
+                                <a href="/terms" className="underline" style={{ color: `${NAVY}70` }}>Terms</a>
+                                {" "}and{" "}
+                                <a href="/privacy" className="underline" style={{ color: `${NAVY}70` }}>Privacy Policy</a>.
                             </p>
                         </motion.div>
                     )}
