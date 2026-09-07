@@ -15,7 +15,7 @@ const SKY = "#A4D4F4";
 const SKY_MID = "#5FA8D3";
 
 const REGISTRIES = [
-    { store: "Williams-Sonoma", category: "Kitchen & Entertaining", desc: "We love to cook together — help us fill our kitchen with the tools to keep making memories.", url: "https://www.williams-sonoma.com/registry/kmfrskv6lz/registry-list.html", icon: Home, color: SKY_MID, featured: true },
+    { store: "Williams-Sonoma", category: "Kitchen & Entertaining", desc: "We love to cook together — help us fill our kitchen with the tools to keep making memories.", url: "https://www.williams-sonoma.com/registry/6rb6pqdxw9/registry-list.html", icon: Home, color: SKY_MID, featured: true },
     { store: "Amazon", category: "Everyday Essentials", desc: "Everything else on our list, from small home essentials to a few fun extras.", url: "https://www.amazon.com/wedding/guest-view/1MMDQ63OJ0LY", icon: Gift, color: SKY, featured: true },
 ];
 
