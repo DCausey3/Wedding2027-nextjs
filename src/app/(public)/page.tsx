@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Lock, Mail, Phone, Key, ChevronRight, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -24,23 +24,29 @@ const COLORS = {
     error: '#d4183d',
 };
 
-export default function LoginPage() {
+// Set to true if a guest tapping their text link should be logged in automatically.
+// Note: anyone who has the link can open that guest's page.
+const AUTO_LOGIN = false;
+
+function LoginForm() {
     const [method, setMethod] = useState<LoginMethod>('code');
     const [value, setValue] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { setGuest } = useAuth();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const prefilled = useRef(false);
 
-    const handleLogin = async () => {
+    const handleLogin = async (codeOverride?: string) => {
         setError('');
         setLoading(true);
 
         try {
             let url = '';
-            const normalizedValue = value.trim();
+            const normalizedValue = (codeOverride ?? value).trim();
 
-            if (method === 'code') {
+            if (codeOverride || method === 'code') {
                 url = `/api/rsvp/lookup?code=${encodeURIComponent(normalizedValue.toUpperCase())}`;
             } else if (method === 'email') {
                 if (normalizedValue.length <= 3 || !normalizedValue.includes('@')) {
@@ -75,16 +81,12 @@ export default function LoginPage() {
             sessionStorage.setItem('guest', JSON.stringify(guest));
             console.log("[Login] wrote to sessionStorage:", sessionStorage.getItem('guest'));
 
-            // Sync with AuthContext and sessionStorage
-            setGuest(guest);
-            sessionStorage.setItem('guest', JSON.stringify(guest));
-
-// Set cookie so Next.js Middleware can verify authorization on the server
+            // Set cookie so Next.js Middleware can verify authorization on the server
             document.cookie = `guest=${encodeURIComponent(
                 JSON.stringify({ id: guest.id, role: guest.role })
             )}; path=/; max-age=604800; SameSite=Lax`;
 
-// Check if the guest is Bride or Groom (Admin Access)
+            // Check if the guest is Bride or Groom (Admin Access)
             const isAdmin = guest?.role === 'Bride' || guest?.role === 'Groom';
 
             if (isAdmin) {
@@ -106,6 +108,21 @@ export default function LoginPage() {
             setLoading(false);
         }
     };
+
+    // Prefill the invite code when the page is opened from a text link (?code=XXXXXX)
+    useEffect(() => {
+        if (prefilled.current) return;
+        const fromLink = searchParams.get('code');
+        if (!fromLink) return;
+
+        prefilled.current = true;
+        const code = fromLink.trim().toUpperCase();
+        setMethod('code');
+        setValue(code);
+
+        if (AUTO_LOGIN) handleLogin(code);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     return (
         <div className="min-h-screen flex" style={{ backgroundColor: COLORS.ivory }}>
@@ -257,7 +274,7 @@ export default function LoginPage() {
                             )}
 
                             <button
-                                onClick={handleLogin}
+                                onClick={() => handleLogin()}
                                 disabled={loading || !value.trim()}
                                 className="w-full py-4 rounded-xl flex items-center justify-center gap-3 text-sm uppercase tracking-widest transition-all hover:opacity-90 disabled:opacity-50"
                                 style={{
@@ -287,5 +304,14 @@ export default function LoginPage() {
                 </motion.div>
             </div>
         </div>
+    );
+}
+
+// useSearchParams must sit inside a Suspense boundary for production builds
+export default function LoginPage() {
+    return (
+        <Suspense fallback={null}>
+            <LoginForm />
+        </Suspense>
     );
 }
