@@ -26,9 +26,9 @@ interface Member {
 // bridal party members will only be at one location.
 const BRIDAL_PARTY: Member[] = [
     { name: 'Vivi Cardenas', role: 'Matron of Honor', side: 'bride', location: 'Atlanta Georgia', howTheyKnowUs: 'Cousins wife who became an older sister' },
+        { name: 'Alejandra Cardenas', role: 'Co-Maid of Honor', side: 'bride', location: 'Tampa, Florida', howTheyKnowUs: 'Twin sister' },
     { name: 'Tori Levy', role: 'Co-Maid of Honor', side: 'bride', location: 'Tampa, Florida', howTheyKnowUs: 'Childhood best friend of the bride' },
     { name: 'Angelica Guinand', role: 'Co-Maid of Honor', side: 'bride', location: 'Tampa, Florida', howTheyKnowUs: 'Childhood best friend of the bride' },
-    { name: 'Alejandra Cardenas', role: 'Bridesmaid', side: 'bride', location: 'Tampa, Florida', howTheyKnowUs: 'Twin sister' },
     { name: 'Anabelle Manriquez', role: 'Bridesmaid', side: 'bride', location: 'Tampa, Florida', howTheyKnowUs: 'Family friend' },
     { name: 'Angelica Peregrino', role: 'Bridesmaid', side: 'bride', location: 'Dallas,Texas', howTheyKnowUs: 'Sister in law' },
     { name: 'Andrea Figueroa', role: 'Bridesmaid', side: 'bride', location: 'Tampa, Florida', howTheyKnowUs: 'Family friend' },

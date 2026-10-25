@@ -116,12 +116,14 @@ function HeroSection({
         attendingFlorida && !attendingColombia
             ? { date: WEDDING_DATES.usa, label: "Florida — April 24, 2027" }
             : { date: WEDDING_DATES.colombia, label: "Colombia — June 12, 2027" };
+        
+    console.log(heroCountdown);
 
     return (
         <div ref={ref} className="relative h-screen min-h-[680px] overflow-hidden">
             <motion.div className="absolute inset-0 overflow-hidden" style={{ y, backgroundColor: SKY_DEEP }}>
                 <Image
-                    src="/dip.JPG"
+                    src="/treeLean.jpeg"
                     alt="Jhoana & Damariel engagement"
                     fill
                     priority
@@ -314,7 +316,11 @@ function HeroSection({
         </div>
     );
 }
-
+// Put this above OurStorySection (real pixel size of each file)
+const STORY_PHOTOS = [
+  { src: "/forehead.jpeg",   alt: "Happy together", width: 1600, height: 1067 },
+  { src: "/ringsholder.jpeg", alt: "The ring",       width: 1200, height: 1600 },
+];
 function OurStorySection() {
     return (
         <section id="story" className="py-28 px-6" style={{ backgroundColor: IVORY }}>
@@ -344,7 +350,7 @@ function OurStorySection() {
                     >
                         <div className="aspect-[4/5] overflow-hidden rounded-2xl relative">
                             <Image
-                                src="/IMG_2958.JPG"
+                                src="/overthesholder.JPG"
                                 alt="The proposal"
                                 fill
                                 className="object-cover"
@@ -451,38 +457,6 @@ function OurStorySection() {
                                 </div>
                             ))}
                         </div>
-                    </motion.div>
-                </div>
-
-                <div className="grid grid-cols-12 gap-4">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.7 }}
-                        className="col-span-7 aspect-[16/9] overflow-hidden rounded-xl relative"
-                    >
-                        <Image
-                            src="/IMG_2960.JPG"
-                            alt="Happy together"
-                            fill
-                            className="object-cover hover:scale-105 transition-transform duration-700"
-                            style={{ objectPosition: "center 20%" }}
-                        />
-                    </motion.div>
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.7, delay: 0.15 }}
-                        className="col-span-5 aspect-[4/3] overflow-hidden rounded-xl relative"
-                    >
-                        <Image
-                            src="/IMG_2962.JPG"
-                            alt="The ring"
-                            fill
-                            className="object-cover hover:scale-105 transition-transform duration-700"
-                        />
                     </motion.div>
                 </div>
 

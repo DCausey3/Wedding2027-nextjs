@@ -2,6 +2,17 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 
+import { PhotoCarousel } from "@/components/ui/PhotoCarousel";
+
+const SAVE_THE_DATE_PHOTOS = [
+  { src: "/forehead.jpeg",   alt: "Happy together", width: 1600, height: 1067 },
+  { src: "/ringsholder.jpeg", alt: "The ring",       width: 1200, height: 1600},
+    {src: "/9EDC617C-7DBA-4505-AE01-B72F8C181668.jpeg", alt: "The ring", width: 1200, height: 1600},
+     {src: "/82C28E49-CAA3-47DC-93EF-46B6660BBA17.jpeg", alt: "The ring", width: 1200, height: 1600},
+    {src: "/387533C2-EAA4-4695-922D-23E16F5880D2.jpeg", alt: "The ring", width: 1200, height: 1600},
+    {src: "/49584828-546A-4E08-B86A-47B775B1D687.jpeg", alt: "The ring", width: 1200, height: 1600},
+    {src: "/A58E6921-7AF0-4BA2-96D5-423D1E9C75D7.jpeg", alt: "The ring", width: 1200, height: 1600},
+];
 export const metadata: Metadata = { title: "Our Story" };
 
 // Palette — Sky Blue + Apricot + Ivory + Sand
@@ -57,24 +68,9 @@ export default function OurStoryPage() {
 
             {/* Engagement photos grid */}
             <section className="section-pad container-wedding mx-auto">
-                <div className="grid grid-cols-12 gap-4 mb-20">
-                    <div className="col-span-7 aspect-video overflow-hidden rounded-2xl">
-                        <Image
-                            src="/IMG_8208.jpeg"
-                            alt="Jhoana and Damariel together"
-                            width={900} height={506}
-                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                        />
-                    </div>
-                    <div className="col-span-5 aspect-[4/3] overflow-hidden rounded-2xl">
-                        <Image
-                            src="/IMG_2961.jpeg"
-                            alt="The ring"
-                            width={600} height={450}
-                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                        />
-                    </div>
-                </div>
+               <div className="mb-20">
+    <PhotoCarousel slides={SAVE_THE_DATE_PHOTOS} />
+  </div>
 
                 {/* Timeline */}
                 <SectionHeader overline="Chapter by Chapter" title="How We" titleItalic="Got Here" className="mb-16" />

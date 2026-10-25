@@ -112,7 +112,7 @@ export default function LoginPage() {
             {/* Left panel — image */}
             <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
                 <Image
-                    src="/IMG_8206.jpeg"
+                    src="/overthesholder.JPG"
                     alt="Jhoana & Damariel"
                     fill
                     className="object-cover"

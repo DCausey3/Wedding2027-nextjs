@@ -42,5 +42,5 @@ export const GUEST_TYPE_LABELS: Record<string, string> = {
 
 export const WEDDING_DATES = {
   colombia: process.env.NEXT_PUBLIC_WEDDING_COLOMBIA_DATE ?? "2027-06-12T18:00:00",
-  usa: process.env.NEXT_PUBLIC_WEDDING_USA_DATE ?? "2027-05-15T18:00:00",
+  usa: process.env.NEXT_PUBLIC_WEDDING_USA_DATE ?? "2027-04-24T18:00:00",
 };
