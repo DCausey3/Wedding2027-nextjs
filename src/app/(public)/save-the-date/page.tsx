@@ -46,7 +46,7 @@ function fireConfetti() {
 }
 
 const WEDDING_INFO: Record<string, { label: string; date: string; place: string; color: string; micro?: boolean }> = {
-    Colombia: { label: "Colombia Wedding", date: "June 12, 2027", place: "Pereira, Colombia", color: SKY },
+    Colombia: { label: "Colombia Wedding", date: "June 12, 2027", place: "Manizales, Colombia", color: SKY },
     USA: { label: "Gainesville Wedding", date: "April 24, 2027", place: "Gainesville, Florida", color: APRICOT, micro: true },
 };
 
@@ -471,7 +471,7 @@ function SaveTheDateContent() {
                                 <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.2rem", fontWeight: 400, color: NAVY }}>
                                     🌎 Colombia Only
                                 </p>
-                                <p className="text-xs mt-1" style={{ color: `${NAVY}68` }}>June 12, 2027 · Pereira</p>
+                                <p className="text-xs mt-1" style={{ color: `${NAVY}68` }}>June 12, 2027 · Manizales</p>
                             </motion.button>
 
                             <motion.button

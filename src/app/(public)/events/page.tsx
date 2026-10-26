@@ -52,12 +52,12 @@ export default function EventsPage() {
             <div>
               <p className="label-overline text-colombia-teal mb-3">Colombia Wedding</p>
               <h2 id="colombia-heading" className="heading-section text-dark mb-4">
-                Pereira,{" "}
+                Manizales,{" "}
                 <span className="italic text-colombia-teal">Colombia</span>
               </h2>
               <div className="space-y-2 mb-8">
                 {[
-                  { icon: Calendar, text: "June, 2027" },
+                  { icon: Calendar, text: "June 12, 2027" },
                   { icon: MapPin, text: "Colombia" },
                   { icon: Clock, text: "TBD" },
                   { icon: Shirt, text: "TBD" },
@@ -137,7 +137,7 @@ export default function EventsPage() {
       {/* RSVP CTA */}
       <div className="py-16 px-6 text-center" style={{ backgroundColor: "#1a1209" }}>
         <p className="font-serif text-2xl font-light text-ivory mb-2">Ready to celebrate?</p>
-        <p className="text-sm text-ivory/50 mb-6">RSVP by September 1st, 2026</p>
+        <p className="text-sm text-ivory/50 mb-6">RSVP by December 1st, 2026</p>
         <Link href="/rsvp" className="btn-gold">RSVP Now</Link>
       </div>
     </div>

@@ -657,10 +657,10 @@ function WeddingsSection({
                         >
                             {attendingColombia && (
                                 <WeddingCard
-                                    title="Colombia Wedding"
+                                    title="Hacienda lindaraja"
                                     date="June 12, 2027"
-                                    location="Colombia"
-                                    image="https://images.unsplash.com/photo-1643068730310-e8cff093b7ab?w=1080&q=80"
+                                    location="Manizales, Colombia"
+                                    image="/lin.jpeg"
                                     accentColor={SKY}
                                     bgGradient="linear-gradient(to top, rgba(18,59,84,0.75) 0%, rgba(18,59,84,0.2) 50%, rgba(18,59,84,0) 100%)"
                                     linkTo="/colombia"
