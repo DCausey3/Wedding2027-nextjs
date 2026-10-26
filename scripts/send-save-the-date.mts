@@ -13,7 +13,7 @@ const db = createClient(
 );
 
 const SITE = "https://causeycardenasforever.com";
-const LOGIN_PATH = "/login"; // page that reads ?code= and prefills the invite code
+const LOGIN_PATH = "/"; // page that reads ?code= and prefills the invite code
 
 type Wedding = "both" | "colombia" | "usa";
 type Lang = "en" | "es";
@@ -28,17 +28,17 @@ const IMAGES: Record<Wedding, Record<Lang, string>> = {
   },
   colombia: {
     en: `${SITE}/STD-C-english.png`,
-    es: `${SITE}/STD-C.png`,
+    es: `${SITE}/STD-C-spanish.png`,
   },
   both: {
     en: `${SITE}/STD-both-english.png`,
-    es: `${SITE}/STD-both.png`,
+    es: `${SITE}/STD-both-spanish.png`,
   },
 };
 const FALLBACK_IMAGE = `${SITE}/savedatw.png`;
 
 // ── Test controls ──
-const DRY_RUN = true;
+const DRY_RUN = false;
 const TEST_GUEST_ID: string | null = "b9c5bce4-b1d8-4e71-bf38-f80493a0fd1a"; // null = full send
 const TEST_TO_PHONE = "+18134641733";
 const TEST_FORCE_WEDDING: Wedding | null = null; // preview a wedding variant on your own row
