@@ -523,7 +523,7 @@ export default function BridalPartyPage() {
                         <p className="mt-4 max-w-lg mx-auto" style={{ color: 'rgba(255,247,236,0.7)', fontSize: '0.95rem', lineHeight: 1.6 }}>
                             {lang === "es"
                                 ? "Amistades inseparables, mejores amigas desde la infancia y hermanos que han estado a nuestro lado desde siempre. Estas son las personas que nos acompañan, ¡con todo y su equipo de porristas!"
-                                : "The ride-or-dies, the childhood best friends, the brothers who&apos;ve been in our corner since before we could tie a tie. These are the people standing beside us — hype squad included."}
+                                : "The ride-or-dies, the childhood best friends, the brothers who've been in our corner since before we could tie a tie. These are the people standing beside us — hype squad included."}
                         </p>
 
                         {/* Animated stat strip */}
@@ -618,7 +618,7 @@ export default function BridalPartyPage() {
                         <p className="mt-4 mb-8" style={{ color: 'rgba(255,247,236,0.65)', fontSize: '0.95rem', lineHeight: 1.6 }}>
                             {lang === "es"
                                 ? "Ya sea que nos acompañes en una o en ambas celebraciones, gracias a ti podremos decir «sí, acepto» rodeados de las personas que más queremos. Ahora hagámoslo oficial."
-                                : "Whether you&apos;re standing with us at one celebration or both, you&apos;re the reason we get to say &ldquo;I do&rdquo; surrounded by the people we love most. Now let&apos;s make it official on paper."}
+                                : "Whether you're standing with us at one celebration or both, you're the reason we get to say “I do” surrounded by the people we love most. Now let's make it official on paper."}
                         </p>
                         <Link
                             href="/rsvp"
