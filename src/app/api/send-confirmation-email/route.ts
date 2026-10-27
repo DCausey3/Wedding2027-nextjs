@@ -18,6 +18,11 @@ const REPLY_TO_EMAIL = "causeycardenas@gmail.com";
 const INTERNAL_NOTIFY_EMAILS = ["causeycardenas@gmail.com"];
 const SITE_URL = "https://causeycardenasforever.com";
 
+// Optional: name of an SES configuration set (for delivery/bounce tracking).
+// Set SES_CONFIGURATION_SET in your environment variables to turn it on.
+const CONFIGURATION_SET = process.env.SES_CONFIGURATION_SET;
+const configSetField = CONFIGURATION_SET ? { ConfigurationSetName: CONFIGURATION_SET } : {};
+
 // CONFIRM: this email used to say "Pereira", but every page on the site says Manizales.
 const COLOMBIA_CITY = "Manizales";
 
@@ -36,7 +41,9 @@ const SHORT_LABELS: Record<WeddingKey, string> = { Colombia: "Colombia", USA: "G
 
 const COPY = {
     en: {
-        subject: "You're confirmed! 🎉 Save the Date details inside",
+        // Plain subject: emoji and exclamation marks are spam signals.
+        subject: "Your Save the Date is confirmed",
+        preheader: "Here's what we have on file for you.",
         overline: "Save the Date Confirmed",
         thanks: (n: string) => `Thank you, ${n}!`,
         intro: "We're so glad you'll be celebrating with us. Here's what we've got on file for you:",
@@ -52,10 +59,13 @@ const COPY = {
         visit: "Visit Our Site",
         update:
             "Need to update anything — your party, contact info, or attendance? Just log back in with your invite code, or reach out to us directly and we'll take care of it.",
+        spamNote:
+            "Tip: if this email landed in your spam or junk folder, please mark it as “Not spam” so you receive our future updates.",
         signoff: "— Jhoana & Damariel",
     },
     es: {
-        subject: "¡Confirmado! 🎉 Aquí están los detalles de tu fecha",
+        subject: "Tu fecha está confirmada",
+        preheader: "Esto es lo que tenemos registrado para ti.",
         overline: "Fecha confirmada",
         thanks: (n: string) => `¡Gracias, ${n}!`,
         intro: "Nos alegra mucho que vayas a celebrar con nosotros. Esto es lo que tenemos registrado para ti:",
@@ -71,6 +81,8 @@ const COPY = {
         visit: "Visitar nuestro sitio",
         update:
             "¿Necesitas actualizar algo, como tu grupo, tus datos de contacto o tu asistencia? Inicia sesión de nuevo con tu código de invitación o escríbenos directamente y nos encargaremos.",
+        spamNote:
+            "Consejo: si este correo llegó a tu carpeta de spam o correo no deseado, márcalo como “No es spam” para recibir nuestras próximas novedades.",
         signoff: "— Jhoana y Damariel",
     },
 } as const;
@@ -128,31 +140,43 @@ function buildGuestEmailHtml(lang: Lang, d: EmailData) {
         }),
     ].join("");
 
-    return `
-    <div style="font-family: Georgia, 'Times New Roman', serif; max-width: 480px; margin: 0 auto; color: #123B54;">
-      <div style="background: linear-gradient(135deg, #123B54 0%, #0a2438 100%); padding: 32px 28px; border-radius: 16px 16px 0 0; text-align: center;">
-        <p style="color: #FFB482; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 12px;">${esc(c.overline)}</p>
-        <h1 style="color: #FFF7EC; font-weight: 300; font-size: 28px; margin: 0;">${esc(c.thanks(d.firstName))}</h1>
-      </div>
-      <div style="background: #FFF7EC; padding: 28px; border-radius: 0 0 16px 16px;">
-        <p style="font-size: 14px; line-height: 1.6;">${esc(c.intro)}</p>
-        <p style="font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #123B5499; margin: 18px 0 6px;">${esc(c.celebrations)}</p>
-        <ul style="font-size: 14px; line-height: 1.6; padding-left: 18px; margin-top: 0;">${weddingLines}</ul>
-        <p style="font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #123B5499; margin: 18px 0 6px;">${esc(c.whosComing)}</p>
-        <ul style="font-size: 14px; line-height: 1.6; padding-left: 18px; margin-top: 0;">${whoLines}</ul>
-        <p style="font-size: 14px; line-height: 1.6;">
-          <strong>${esc(c.nextLabel)}</strong> ${esc(c.nextBody)}
-        </p>
-        <div style="text-align: center; margin: 24px 0;">
-          <a href="${SITE_URL}/login" style="background: #FFB482; color: #123B54; text-decoration: none; padding: 12px 28px; border-radius: 999px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; display: inline-block;">
-            ${esc(c.visit)}
-          </a>
-        </div>
-        <p style="font-size: 12px; color: #123B5499; line-height: 1.6;">${esc(c.update)}</p>
-        <p style="font-size: 13px; font-style: italic; color: #FFB482; margin-top: 20px;">${esc(c.signoff)}</p>
-      </div>
+    // A complete HTML document (doctype, head, title, body) plus a hidden preheader.
+    // Filters treat bare HTML fragments as lower quality.
+    return `<!DOCTYPE html>
+<html lang="${lang}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${esc(c.subject)}</title>
+</head>
+<body style="margin:0; padding:16px; background-color:#FFF7EC;">
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0;">${esc(c.preheader)}</div>
+  <div style="font-family: Georgia, 'Times New Roman', serif; max-width: 480px; margin: 0 auto; color: #123B54;">
+    <div style="background-color: #123B54; background: linear-gradient(135deg, #123B54 0%, #0a2438 100%); padding: 32px 28px; border-radius: 16px 16px 0 0; text-align: center;">
+      <p style="color: #FFB482; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 12px;">${esc(c.overline)}</p>
+      <h1 style="color: #FFF7EC; font-weight: 300; font-size: 28px; margin: 0;">${esc(c.thanks(d.firstName))}</h1>
     </div>
-  `;
+    <div style="background: #FFF7EC; padding: 28px; border-radius: 0 0 16px 16px;">
+      <p style="font-size: 14px; line-height: 1.6;">${esc(c.intro)}</p>
+      <p style="font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #123B5499; margin: 18px 0 6px;">${esc(c.celebrations)}</p>
+      <ul style="font-size: 14px; line-height: 1.6; padding-left: 18px; margin-top: 0;">${weddingLines}</ul>
+      <p style="font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #123B5499; margin: 18px 0 6px;">${esc(c.whosComing)}</p>
+      <ul style="font-size: 14px; line-height: 1.6; padding-left: 18px; margin-top: 0;">${whoLines}</ul>
+      <p style="font-size: 14px; line-height: 1.6;">
+        <strong>${esc(c.nextLabel)}</strong> ${esc(c.nextBody)}
+      </p>
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${SITE_URL}" style="background: #FFB482; color: #123B54; text-decoration: none; padding: 12px 28px; border-radius: 999px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; display: inline-block;">
+          ${esc(c.visit)}
+        </a>
+      </div>
+      <p style="font-size: 12px; color: #123B5499; line-height: 1.6;">${esc(c.update)}</p>
+      <p style="font-size: 12px; color: #123B5499; line-height: 1.6;">${esc(c.spamNote)}</p>
+      <p style="font-size: 13px; font-style: italic; color: #FFB482; margin-top: 20px;">${esc(c.signoff)}</p>
+    </div>
+  </div>
+</body>
+</html>`;
 }
 
 function buildGuestEmailText(lang: Lang, d: EmailData) {
@@ -175,9 +199,11 @@ ${whoLines}
 
 ${c.nextLabel} ${c.nextBody}
 
-${SITE_URL}/login
+${SITE_URL}
 
 ${c.update}
+
+${c.spamNote}
 
 ${c.signoff}`;
 }
@@ -332,6 +358,7 @@ export async function POST(req: NextRequest) {
                 Source: FROM_EMAIL,
                 Destination: { ToAddresses: [guestEmail] },
                 ReplyToAddresses: [REPLY_TO_EMAIL],
+                ...configSetField,
                 Message: {
                     Subject: { Data: COPY[lang].subject, Charset: "UTF-8" },
                     Body: {
@@ -345,6 +372,7 @@ export async function POST(req: NextRequest) {
                 const r = await ses.send(guestCommand);
                 guestEmailSent = true;
                 results.guestEmail = { success: true, messageId: r.MessageId, language: lang };
+                console.log("SES accepted guest email:", r.MessageId);
 
                 const { data: updatedGuest, error: trackingError } = await supabase
                     .from("guests")
@@ -402,6 +430,7 @@ export async function POST(req: NextRequest) {
                 Source: FROM_EMAIL,
                 Destination: { ToAddresses: INTERNAL_NOTIFY_EMAILS },
                 ReplyToAddresses: [REPLY_TO_EMAIL],
+                ...configSetField,
                 Message: {
                     Subject: { Data: `${anyoneAttending ? "✅" : "🌸"} ${name} just RSVP'd — ${summary}`, Charset: "UTF-8" },
                     Body: {
@@ -414,6 +443,7 @@ export async function POST(req: NextRequest) {
             try {
                 const r = await ses.send(internalCommand);
                 results.internalEmail = { success: true, messageId: r.MessageId };
+                console.log("SES accepted internal notification:", r.MessageId);
             } catch (err: any) {
                 console.error("AWS SES Internal Email Error:", err?.message || err);
                 results.internalEmail = { success: false, error: err?.message || "SES internal email error" };

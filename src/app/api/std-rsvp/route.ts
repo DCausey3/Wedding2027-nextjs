@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
             const adults = items.filter((p) => p.memberType !== "child");
             const kids = items.filter((p) => p.memberType === "child");
 
-            if (adults.length > maxExtras) {
+            if (items.length > maxExtras) {
                 return fail(`Your invitation allows up to ${maxExtras} additional guest${maxExtras === 1 ? "" : "s"}`);
             }
             if (kids.length > MAX_CHILDREN) {

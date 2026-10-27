@@ -143,6 +143,9 @@ type SaveCopy = {
     updates: string;
     updatesNote: string;
     email: string;
+    emailHint: string;
+    spamNote: string;
+    continueToSite: string;
     phone: string;
     mailingAddress: string;
     mailingNote: string;
@@ -223,6 +226,9 @@ const COPY_EN: SaveCopy = {
     updates: "Stay in the loop",
     updatesNote: "We'll keep you updated as the wedding gets closer.",
     email: "Email",
+    emailHint: "We'll send your confirmation here. If you don't see it, check your spam folder.",
+    spamNote: "Don't see our email? Check your spam or junk folder, and mark it as “Not spam” so you get our updates.",
+    continueToSite: "Continue to the site",
     phone: "Phone",
     mailingAddress: "Mailing Address",
     mailingNote: "We'll use this to send your formal RSVP invitation and, later, a thank-you card.",
@@ -303,6 +309,9 @@ const COPY_ES: typeof COPY_EN = {
     updates: "Mantente al tanto",
     updatesNote: "Te enviaremos novedades a medida que se acerque la boda.",
     email: "Correo electrónico",
+    emailHint: "Enviaremos tu confirmación a este correo. Si no la ves, revisa tu carpeta de spam.",
+    spamNote: "¿No ves nuestro correo? Revisa tu carpeta de spam o correo no deseado y márcalo como “No es spam” para recibir nuestras novedades.",
+    continueToSite: "Continuar al sitio",
     phone: "Teléfono",
     mailingAddress: "Dirección postal",
     mailingNote: "Usaremos esta dirección para enviarte la invitación formal y, más adelante, una tarjeta de agradecimiento.",
@@ -589,7 +598,8 @@ function SaveTheDateContent() {
     const adults = party.filter((m) => m.memberType === "adult");
     const children = party.filter((m) => m.memberType === "child");
     const adultSpotsLeft = Math.max(0, allowance - adults.length);
-    const canAddChild = children.length < MAX_CHILDREN;
+    const partySpotsLeft = Math.max(0, allowance - party.length);
+    const canAddChild = partySpotsLeft > 0 && children.length < MAX_CHILDREN;
 
     const showPartyBlock = isAttendingAnything && !partyLoading;
 
@@ -620,10 +630,13 @@ function SaveTheDateContent() {
         setParty((prev) => [...prev, { ...base, attendingColombia: c, attendingFlorida: f }]);
     };
 
+    const goToSite = () => router.push(`/?guest=${guest?.id}`);
+
     const completeSubmission = () => {
         if (isAttendingAnything) fireConfetti();
         setDone(true);
-        setTimeout(() => router.push(`/?guest=${guest?.id}`), 2500);
+        // Attending guests get longer on this screen so they can read the spam-folder reminder.
+        setTimeout(goToSite, isAttendingAnything ? 9000 : 2500);
     };
 
     const sendConfirmationEmail = async (skipInternalNotification: boolean) => {
@@ -786,6 +799,14 @@ function SaveTheDateContent() {
                             {t.submittedThanks} <span style={{ color: NAVY, fontWeight: 500 }}>{email.trim()}</span> {t.emailSent}
                         </p>
                     )}
+                    {isAttendingAnything && (
+                        <div className="mt-4 flex items-start gap-2.5 text-left p-4 rounded-xl" style={{ backgroundColor: SAND_LIGHT }}>
+                            <Mail size={15} style={{ color: APRICOT, marginTop: 2, flexShrink: 0 }} />
+                            <p className="text-xs leading-relaxed" style={{ color: `${NAVY}68` }}>
+                                {t.spamNote}
+                            </p>
+                        </div>
+                    )}
                     {!isAttendingAnything && (
                         <div className="mt-4 flex items-start gap-2.5 text-left p-4 rounded-xl" style={{ backgroundColor: SAND_LIGHT }}>
                             <Gift size={15} style={{ color: APRICOT, marginTop: 2, flexShrink: 0 }} />
@@ -795,6 +816,13 @@ function SaveTheDateContent() {
                         </div>
                     )}
                     <p className="mt-4 text-sm" style={{ color: `${NAVY}66` }}>{t.redirectHome}</p>
+                    <button
+                        onClick={goToSite}
+                        className="mt-4 px-6 py-2.5 rounded-full text-xs uppercase tracking-[0.15em]"
+                        style={{ backgroundColor: APRICOT, color: "#fff" }}
+                    >
+                        {t.continueToSite}
+                    </button>
                 </motion.div>
             </div>
         );
@@ -1077,9 +1105,9 @@ function SaveTheDateContent() {
                                 })}
                             </div>
 
-                            {(adultSpotsLeft > 0 || canAddChild) && (
+                            {(partySpotsLeft > 0 || canAddChild) && (
                                 <div className="flex flex-wrap items-center gap-3 mt-4">
-                                    {adultSpotsLeft > 0 && (
+                                    {partySpotsLeft > 0 && adultSpotsLeft > 0 && (
                                         <button
                                             type="button"
                                             onClick={() => addMember("adult")}
@@ -1099,9 +1127,9 @@ function SaveTheDateContent() {
                                             <Baby size={12} /> {t.addChild}
                                         </button>
                                     )}
-                                    {adultSpotsLeft > 0 && (
+                                    {partySpotsLeft > 0 && (
                                         <span className="text-[0.6rem]" style={{ color: `${NAVY}60` }}>
-                                            {t.spotsLeft.replace("{count}", String(adultSpotsLeft))}
+                                            {t.spotsLeft.replace("{count}", String(partySpotsLeft))}
                                         </span>
                                     )}
                                 </div>
@@ -1188,6 +1216,9 @@ function SaveTheDateContent() {
                                     className="w-full px-4 py-3 rounded-xl text-sm outline-none"
                                     style={{ backgroundColor: SAND_LIGHT, border: "1.5px solid transparent", color: NAVY }}
                                 />
+                                <p className="text-[0.68rem] mt-2" style={{ color: `${NAVY}60` }}>
+                                    {t.emailHint}
+                                </p>
                             </div>
 
                             <div>

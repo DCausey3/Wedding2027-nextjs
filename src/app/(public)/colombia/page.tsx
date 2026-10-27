@@ -13,7 +13,7 @@ import { formatLocalizedDate } from "@/lib/utils";
 
 // ─── Wedding details ────────────────────────────────────────────────────────
 const COLOMBIA_DATE = new Date('2027-06-12T18:00:00');
-const VENUE_NAME = 'Hacienda Linedaraja'; // confirm spelling
+const VENUE_NAME = 'Hacienda Lindaraja'; // confirm spelling
 const VENUE_CITY = 'Manizales, Colombia';
 
 // Add your venue photo to /public and set the path here (for example '/hacienda.jpg').

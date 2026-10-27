@@ -19,7 +19,7 @@ const SKY_MID = "#5FA8D3";
 // ─── Zelle ──────────────────────────────────────────────────────────────────
 // Add your Zelle QR image to /public and match the file name here.
 const ZELLE_QR = "/QR.png";
-const ZELLE_EMAIL = "causeycardeans@gmail.com"; // double-check this spelling before publishing
+const ZELLE_EMAIL = "causeycardenas@gmail.com"; // double-check this spelling before publishing
 
 const REGISTRIES = [
     { id: "kitchen", store: "Williams-Sonoma", url: "https://www.williams-sonoma.com/registry/6rb6pqdxw9/registry-list.html", icon: Home, color: SKY_MID, featured: true },
