@@ -1,6 +1,6 @@
 // Place at: app/api/std-rsvp/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 // Sanity cap on children per invitation. Kids don't count against the plus-one
 // allowance, but this stops a typo (or tampering) from adding hundreds of rows.
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
             return fail("guestId and attending are required");
         }
 
-        const supabase = await createClient();
+        const supabase = createAdminClient();
 
         // Read eligibility and limits from the database, never from the client.
         const { data: guest, error: guestErr } = await supabase

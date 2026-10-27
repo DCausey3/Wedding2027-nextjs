@@ -4,7 +4,7 @@
 // (not whatever was cached in sessionStorage at login).
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export async function GET(req: NextRequest) {
     const guestId = req.nextUrl.searchParams.get("guest");
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const supabase = await createClient();
+        const supabase = createAdminClient();
 
         const { data: guest, error } = await supabase
             .from("guests")
