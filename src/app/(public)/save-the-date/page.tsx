@@ -50,7 +50,6 @@ type PartyMember = {
 
 type PartyInfo = {
     allowance: number; // extra adults this invitation allows
-    childrenAllowed: boolean;
     selectedWedding: string | null;
     stdResponded: boolean;
 };
@@ -515,7 +514,6 @@ function SaveTheDateContent() {
                 const allowance = Number(j.plusOneCount) || 0;
                 setPartyInfo({
                     allowance,
-                    childrenAllowed: !!j.childrenAllowed,
                     selectedWedding: j.selectedWedding ?? null,
                     stdResponded: !!j.stdResponded,
                 });
@@ -540,7 +538,7 @@ function SaveTheDateContent() {
             } catch {
                 if (cancelled) return;
                 const allowance = guest.plusOneAllowed ? guest.plusOneCount ?? 0 : 0;
-                setPartyInfo({ allowance, childrenAllowed: false, selectedWedding: guest.selectedWedding, stdResponded: false });
+                setPartyInfo({ allowance, selectedWedding: guest.selectedWedding, stdResponded: false });
                 setParty(Array.from({ length: allowance }, () => blankMember("adult")));
             } finally {
                 if (!cancelled) setPartyLoading(false);
@@ -588,13 +586,12 @@ function SaveTheDateContent() {
     const eligibleFlorida = sel == null || sel === "USA" || sel === "Both";
 
     const allowance = partyInfo?.allowance ?? 0;
-    const childrenAllowed = partyInfo?.childrenAllowed ?? false;
     const adults = party.filter((m) => m.memberType === "adult");
     const children = party.filter((m) => m.memberType === "child");
     const adultSpotsLeft = Math.max(0, allowance - adults.length);
-    const canAddChild = childrenAllowed && children.length < MAX_CHILDREN;
+    const canAddChild = children.length < MAX_CHILDREN;
 
-    const showPartyBlock = isAttendingAnything && !partyLoading && (allowance > 0 || childrenAllowed || party.length > 0);
+    const showPartyBlock = isAttendingAnything && !partyLoading;
 
     const adultsMissingName = party.some((m) => m.memberType === "adult" && !m.fullName.trim());
 
@@ -1036,9 +1033,7 @@ function SaveTheDateContent() {
                                 {t.partyTitle}
                             </p>
                             <p className="text-xs mb-1" style={{ color: `${NAVY}70` }}>{partyIntro}</p>
-                            {childrenAllowed && allowance > 0 && (
-                                <p className="text-xs mb-1" style={{ color: `${NAVY}70` }}>{t.kidsNote}</p>
-                            )}
+                            <p className="text-xs mb-1" style={{ color: `${NAVY}70` }}>{t.kidsNote}</p>
                             {includesGainesville && (
                                 <p className="text-xs mb-1" style={{ color: `${NAVY}70` }}>{t.fixedGuestCount}</p>
                             )}

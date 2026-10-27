@@ -39,8 +39,8 @@ const FALLBACK_IMAGE = `${SITE}/savedatw.png`;
 
 // ── Test controls ──
 const DRY_RUN = false;
-const TEST_GUEST_ID: string | null = "b9c5bce4-b1d8-4e71-bf38-f80493a0fd1a"; // null = full send
-const TEST_TO_PHONE = "+18134641733";
+const TEST_GUEST_ID: string | null = "d25262ca-1acf-481c-bd31-49a1fbea6ee7"; // null = full send
+const TEST_TO_PHONE = "+13522842930";
 const TEST_FORCE_WEDDING: Wedding | null = null; // preview a wedding variant on your own row
 const TEST_FORCE_SPANISH: boolean | null = null; // true/false to preview a language on your own row
 

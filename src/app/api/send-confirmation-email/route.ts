@@ -279,8 +279,12 @@ export async function POST(req: NextRequest) {
             .from("guests")
             .select("id, first_name, last_name, email, phone, std_attending_colombia, std_attending_florida, guest_count, mailing_address, sms_consent, decline_reason, role, invitation_type, spanish")
             .eq("id", guestId)
-            .single();
-        if (guestErr || !guest) {
+            .maybeSingle();
+        if (guestErr) {
+            console.error("Failed to look up guest for confirmation email:", guestErr);
+            return NextResponse.json({ error: "Unable to look up guest" }, { status: 500 });
+        }
+        if (!guest) {
             return NextResponse.json({ error: "Guest not found" }, { status: 404 });
         }
 

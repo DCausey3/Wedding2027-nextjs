@@ -44,10 +44,14 @@ export async function POST(req: NextRequest) {
         // Read eligibility and limits from the database, never from the client.
         const { data: guest, error: guestErr } = await supabase
             .from("guests")
-            .select("id, selected_wedding, plus_one_allowed, plus_one_count, children_allowed")
+            .select("id, selected_wedding, plus_one_allowed, plus_one_count")
             .eq("id", guestId)
-            .single();
-        if (guestErr || !guest) return fail("Guest not found", 404);
+            .maybeSingle();
+        if (guestErr) {
+            console.error("Failed to look up guest for RSVP:", guestErr);
+            return fail("Unable to look up guest", 500);
+        }
+        if (!guest) return fail("Guest not found", 404);
 
         // selected_wedding decides which choices the page shows.
         // null means "may pick either" (same as the page today).
@@ -78,9 +82,6 @@ export async function POST(req: NextRequest) {
 
             if (adults.length > maxExtras) {
                 return fail(`Your invitation allows up to ${maxExtras} additional guest${maxExtras === 1 ? "" : "s"}`);
-            }
-            if (kids.length > 0 && !guest.children_allowed) {
-                return fail("Children aren't included in this invitation");
             }
             if (kids.length > MAX_CHILDREN) {
                 return fail(`Please contact us if you're bringing more than ${MAX_CHILDREN} children`);

@@ -17,10 +17,14 @@ export async function GET(req: NextRequest) {
 
         const { data: guest, error } = await supabase
             .from("guests")
-            .select("id, selected_wedding, plus_one_allowed, plus_one_count, children_allowed, std_responded, std_attending_colombia, std_attending_florida, guest_count")
+            .select("id, selected_wedding, plus_one_allowed, plus_one_count, std_responded, std_attending_colombia, std_attending_florida, guest_count")
             .eq("id", guestId)
-            .single();
-        if (error || !guest) {
+            .maybeSingle();
+        if (error) {
+            console.error("Failed to look up guest party:", error);
+            return NextResponse.json({ error: "Unable to look up guest" }, { status: 500 });
+        }
+        if (!guest) {
             return NextResponse.json({ error: "Guest not found" }, { status: 404 });
         }
 
@@ -35,7 +39,6 @@ export async function GET(req: NextRequest) {
             selectedWedding: guest.selected_wedding ?? null,
             // plus_one_count = extra adults this invitation allows (not counting the guest or kids)
             plusOneCount: guest.plus_one_allowed ? Math.max(0, guest.plus_one_count ?? 0) : 0,
-            childrenAllowed: !!guest.children_allowed,
             stdResponded: !!guest.std_responded,
             stdAttendingColombia: !!guest.std_attending_colombia,
             stdAttendingFlorida: !!guest.std_attending_florida,
