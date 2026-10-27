@@ -10,6 +10,7 @@ frontend:
         - env | grep -e SES_ >> .env.production
         - env | grep -e SUPABASE_ >> .env.production
         - env | grep -e NEXT_PUBLIC_ >> .env.production
+        - env | grep -e SUPABASE_SERVICE_ROLE_KEY -e NEXT_PUBLIC_SUPABASE_URL >> .env.production
         - npm run build
   artifacts:
     baseDirectory: .next
