@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import { useAuth } from "../../app/context/AuthContext";
+import { useLanguage } from "../providers/LanguageProvider";
 
 const COLORS = {
     navy: "#2c3e4a",
@@ -13,19 +14,19 @@ const COLORS = {
     muted: "#8a9aa5",
 };
 
-const FOOTER_LINKS = [
-    { href: "/rsvp", label: "RSVP" },
-    { href: "/registry", label: "Registry" },
-    { href: "/faq", label: "FAQ" },
-    { href: "/contact", label: "Contact" },
-];
-
 export function Footer() {
     const { guest, loaded } = useAuth();
     const router = useRouter();
+    const { lang } = useLanguage();
 
     // Avoid a flash of "enabled" links before sessionStorage rehydration finishes.
     const locked = !loaded || !guest;
+    const footerLinks = [
+        { href: "/rsvp", label: "RSVP" },
+        { href: "/registry", label: lang === "es" ? "Regalos" : "Registry" },
+        { href: "/faq", label: "FAQ" },
+        { href: "/contact", label: lang === "es" ? "Contacto" : "Contact" },
+    ];
 
     const handleLockedClick = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -46,15 +47,15 @@ export function Footer() {
                         Jhoana <span className="italic" style={{ color: COLORS.sand }}>&amp;</span> Damariel
                     </p>
 
-                    <nav aria-label="Footer navigation">
+                    <nav aria-label={lang === "es" ? "Navegación del pie de página" : "Footer navigation"}>
                         <ul className="flex flex-wrap justify-center gap-6 list-none">
-                            {FOOTER_LINKS.map((link) => (
+                            {footerLinks.map((link) => (
                                 <li key={link.href}>
                                     <Link
                                         href={locked ? "/" : link.href}
                                         onClick={locked ? handleLockedClick : undefined}
                                         aria-disabled={locked}
-                                        title={locked ? "Log in to access this page" : undefined}
+                                        title={locked ? lang === "es" ? "Inicia sesión para acceder a esta página" : "Log in to access this page" : undefined}
                                         className="label-overline transition-colors"
                                         style={{
                                             color: "rgba(255,247,236,0.4)",
@@ -76,9 +77,9 @@ export function Footer() {
                     </nav>
 
                     <p className="text-xs mt-2" style={{ color: "rgba(255,247,236,0.2)" }}>
-                        Made with love &hearts;
+                        {lang === "es" ? "Hecho con amor" : "Made with love"} &hearts;
                         &nbsp;·&nbsp;
-                        Site by{" "}
+                        {lang === "es" ? "Sitio web por" : "Site by"}{" "}
                         <a
                             href="https://causeyinnovations.com"
                             target="_blank"

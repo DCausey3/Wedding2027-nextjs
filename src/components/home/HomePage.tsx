@@ -6,7 +6,8 @@ import Image from "next/image";
 import { motion, useScroll, useTransform } from "motion/react";
 import { ArrowDown, MapPin, Calendar, Gift, Mail } from "lucide-react";
 import { CountdownTimer } from "../../components/ui/CountdownTimer";
-import { WEDDING_DATES } from "../../lib/utils";
+import { formatLocalizedDate, WEDDING_DATES } from "../../lib/utils";
+import { useLanguage } from "../providers/LanguageProvider";
 
 // ─── Palette — Sky Blue + Apricot + Ivory + Sand ───────────────────────────
 const SKY_DEEP = "#123B54"; // deep shade of the sky-blue hue — replaces navy everywhere
@@ -78,6 +79,7 @@ function useAttendance(guest: Guest | null) {
 // offset here, this banner renders at y=0 and sits directly underneath it.
 // h-16 (64px) matches the Navbar's fixed height.
 function WelcomeBanner({ name }: { name?: string | null }) {
+    const { lang } = useLanguage();
     if (!name) return null;
 
     return (
@@ -89,7 +91,7 @@ function WelcomeBanner({ name }: { name?: string | null }) {
             style={{ backgroundColor: SKY_DEEP, borderBottom: "1px solid rgba(255,180,130,0.25)", marginTop: "4rem" }}
         >
             <p className="text-xs uppercase tracking-[0.15em]" style={{ color: PEACH }}>
-                Welcome back, {name}! We&apos;re so glad you&apos;re here.
+                {lang === "es" ? "¡Qué bueno tenerte de vuelta," : "Welcome back,"} <span translate="no">{name}</span>{lang === "es" ? "! Nos alegra mucho que estés aquí." : "! We're so glad you're here."}
             </p>
         </motion.div>
     );
@@ -105,6 +107,7 @@ function HeroSection({
     attendingFlorida: boolean;
     attendingBoth: boolean;
 }) {
+    const { lang } = useLanguage();
     const ref = useRef<HTMLDivElement>(null);
     const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
     const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
@@ -114,8 +117,8 @@ function HeroSection({
     // Otherwise (Colombia only, both, or undecided) lead with Colombia since it's earlier.
     const heroCountdown =
         attendingFlorida && !attendingColombia
-            ? { date: WEDDING_DATES.usa, label: "Florida — April 24, 2027" }
-            : { date: WEDDING_DATES.colombia, label: "Colombia — June 12, 2027" };
+            ? { date: WEDDING_DATES.usa, label: `Florida — ${formatLocalizedDate(new Date(WEDDING_DATES.usa), lang)}` }
+            : { date: WEDDING_DATES.colombia, label: `Colombia — ${formatLocalizedDate(new Date(WEDDING_DATES.colombia), lang)}` };
         
     console.log(heroCountdown);
 
@@ -233,7 +236,9 @@ function HeroSection({
                 >
                     <div className="h-px w-12" style={{ backgroundColor: APRICOT }} />
                     <p className="uppercase tracking-widest" style={{ color: PEACH, fontSize: "0.65rem", letterSpacing: "0.25em" }}>
-                        {attendingBoth ? "Two Celebrations, One Love Story" : "Join Us For Our Celebration"}
+                        {lang === "es"
+                            ? attendingBoth ? "Dos celebraciones, una historia de amor" : "Acompáñanos a celebrar"
+                            : attendingBoth ? "Two Celebrations, One Love Story" : "Join Us For Our Celebration"}
                     </p>
                 </motion.div>
 
@@ -248,7 +253,7 @@ function HeroSection({
                         className="inline-block px-8 py-3 rounded-full text-xs tracking-widest uppercase transition-all hover:opacity-90"
                         style={{ backgroundColor: APRICOT, color: SKY_DEEP, letterSpacing: "0.2em" }}
                     >
-                        View Invitation
+                        {lang === "es" ? "Ver invitación" : "View Invitation"}
                     </Link>
                 </motion.div>
             </motion.div>
@@ -268,7 +273,7 @@ function HeroSection({
                         >
                             <CountdownTimer
                                 targetDate={WEDDING_DATES.colombia}
-                                label="Colombia — June 12, 2027"
+                                label={`Colombia — ${formatLocalizedDate(new Date(WEDDING_DATES.colombia), lang)}`}
                                 textColor={IVORY}
                                 accentColor={SKY}
                                 size="sm"
@@ -280,7 +285,7 @@ function HeroSection({
                         >
                             <CountdownTimer
                                 targetDate={WEDDING_DATES.usa}
-                                label="Florida — April 24, 2027"
+                                label={`Florida — ${formatLocalizedDate(new Date(WEDDING_DATES.usa), lang)}`}
                                 textColor={IVORY}
                                 accentColor={APRICOT}
                                 size="sm"
@@ -322,6 +327,7 @@ const STORY_PHOTOS = [
   { src: "/ringsholder.jpeg", alt: "The ring",       width: 1200, height: 1600 },
 ];
 function OurStorySection() {
+    const { lang } = useLanguage();
     return (
         <section id="story" className="py-28 px-6" style={{ backgroundColor: IVORY }}>
             <div className="max-w-6xl mx-auto">
@@ -333,10 +339,10 @@ function OurStorySection() {
                     className="text-center mb-20"
                 >
                     <p className="uppercase tracking-widest mb-4" style={{ color: APRICOT, fontSize: "0.6rem", letterSpacing: "0.3em" }}>
-                        Our Journey
+                        {lang === "es" ? "Nuestro camino" : "Our Journey"}
                     </p>
                     <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 300, color: SKY_DEEP, lineHeight: 1.1 }}>
-                        The Story So Far
+                        {lang === "es" ? "Nuestra historia hasta hoy" : "The Story So Far"}
                     </h2>
                 </motion.div>
 
@@ -351,15 +357,15 @@ function OurStorySection() {
                         <div className="aspect-[4/5] overflow-hidden rounded-2xl relative">
                             <Image
                                 src="/overthesholder.JPG"
-                                alt="The proposal"
+                                alt={lang === "es" ? "La propuesta de matrimonio" : "The proposal"}
                                 fill
                                 className="object-cover"
                                 style={{ objectPosition: "center 30%" }}
                             />
                         </div>
                         <div className="absolute -bottom-4 -right-4 rounded-xl px-6 py-4" style={{ backgroundColor: APRICOT, color: SKY_DEEP }}>
-                            <p className="uppercase tracking-widest" style={{ fontSize: "0.55rem", letterSpacing: "0.2em" }}>The Proposal</p>
-                            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.25rem", fontWeight: 400 }}>Spring 2026</p>
+                            <p className="uppercase tracking-widest" style={{ fontSize: "0.55rem", letterSpacing: "0.2em" }}>{lang === "es" ? "La propuesta" : "The Proposal"}</p>
+                            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.25rem", fontWeight: 400 }}>{lang === "es" ? "Primavera de 2026" : "Spring 2026"}</p>
                         </div>
                     </motion.div>
 
@@ -378,7 +384,7 @@ function OurStorySection() {
                                 letterSpacing: "0.25em",
                             }}
                         >
-                            How It All Began
+                            {lang === "es" ? "Cómo comenzó todo" : "How It All Began"}
                         </p>
 
                         <h3
@@ -390,47 +396,43 @@ function OurStorySection() {
                                 lineHeight: 1.15,
                             }}
                         >
-                            One Swipe Changed Everything
+                            {lang === "es" ? "Un desliz cambió todo" : "One Swipe Changed Everything"}
                         </h3>
 
                         <p
                             className="leading-relaxed"
                             style={{ color: SKY_DEEP, opacity: 0.75, fontSize: "0.95rem" }}
                         >
-                            What started as a simple match on Hinge quickly became something neither of
-                            us expected. After days of talking and countless conversations, we met for
-                            our first date over loaded fries at Flippin' Fries Factory. Damariel was so
-                            nervous he barely ate—but everything changed when they discovered they both
-                            loved the <em>Fast &amp; Furious</em> movies.
+                            {lang === "es"
+                                ? <>Lo que comenzó con un simple match en Hinge pronto se convirtió en algo que ninguno esperaba. Después de días conversando, tuvimos nuestra primera cita con papas cargadas en Flippin&apos; Fries Factory. Damariel estaba tan nervioso que casi no comió, pero todo cambió cuando descubrieron que a ambos les encantaban las películas de <em>Rápidos y Furiosos</em>.</>
+                                : <>What started as a simple match on Hinge quickly became something neither of us expected. After days of talking and countless conversations, we met for our first date over loaded fries at Flippin&apos; Fries Factory. Damariel was so nervous he barely ate—but everything changed when they discovered they both loved the <em>Fast &amp; Furious</em> movies.</>}
                         </p>
 
                         <p
                             className="leading-relaxed"
                             style={{ color: SKY_DEEP, opacity: 0.75, fontSize: "0.95rem" }}
                         >
-                            That lunch date turned into an entire day together, and before long we
-                            became each other's biggest supporters. Through college, career changes,
-                            medical school dreams, and a move to Texas, our relationship continued to
-                            grow stronger with every new adventure.
+                            {lang === "es"
+                                ? "Ese almuerzo se convirtió en un día entero juntos y, pronto, nos volvimos el mayor apoyo del otro. Entre la universidad, los cambios de carrera, los sueños de estudiar medicina y una mudanza a Texas, nuestra relación se fortaleció con cada nueva aventura."
+                                : "That lunch date turned into an entire day together, and before long we became each other's biggest supporters. Through college, career changes, medical school dreams, and a move to Texas, our relationship continued to grow stronger with every new adventure."}
                         </p>
 
                         <p
                             className="leading-relaxed"
                             style={{ color: SKY_DEEP, opacity: 0.75, fontSize: "0.95rem" }}
                         >
-                            After months of planning, Damariel surprised Jhoana with a date at the
-                            Dallas Arboretum and Botanical Garden. Surrounded by beautiful gardens and
-                            hidden behind the lens of a photographer, he got down on one knee and asked
-                            her to spend forever with him. She said <strong>yes</strong>.
+                            {lang === "es"
+                                ? <>Después de meses de preparación, Damariel sorprendió a Jhoana con una cita en el Dallas Arboretum and Botanical Garden. Rodeado de hermosos jardines y con un fotógrafo capturando el momento, se arrodilló y le pidió compartir la vida juntos. Ella dijo <strong>que sí</strong>.</>
+                                : <>After months of planning, Damariel surprised Jhoana with a date at the Dallas Arboretum and Botanical Garden. Surrounded by beautiful gardens and hidden behind the lens of a photographer, he got down on one knee and asked her to spend forever with him. She said <strong>yes</strong>.</>}
                         </p>
 
                         <div className="h-px" style={{ backgroundColor: SAND }} />
 
                         <div className="flex gap-8">
                             {[
-                                ["1", "First Date"],
-                                ["2", "Celebrations"],
-                                ["∞", "Forever"],
+                                ["1", lang === "es" ? "Primera cita" : "First Date"],
+                                ["2", lang === "es" ? "Celebraciones" : "Celebrations"],
+                                ["∞", lang === "es" ? "Para siempre" : "Forever"],
                             ].map(([num, label]) => (
                                 <div key={label}>
                                     <p
@@ -472,7 +474,7 @@ function OurStorySection() {
                         className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-xs uppercase tracking-widest transition-all hover:opacity-90"
                         style={{ backgroundColor: SKY_DEEP, color: IVORY, letterSpacing: "0.2em" }}
                     >
-                        Read Our Full Story
+                        {lang === "es" ? "Lee nuestra historia completa" : "Read Our Full Story"}
                         <span aria-hidden="true">→</span>
                     </Link>
                 </motion.div>
@@ -488,6 +490,7 @@ function WeddingCard({
     title: string; date: string; location: string; image: string;
     accentColor: string; bgGradient: string; linkTo: string; delay?: number;
 }) {
+    const { lang } = useLanguage();
     return (
         <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -522,7 +525,7 @@ function WeddingCard({
                     className="mt-6 inline-flex items-center gap-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-70"
                     style={{ color: IVORY, letterSpacing: "0.15em" }}
                 >
-                    Explore
+                    {lang === "es" ? "Explorar" : "Explore"}
                     <div className="h-px w-8" style={{ backgroundColor: accentColor }} />
                 </Link>
             </div>
@@ -537,6 +540,7 @@ function WeddingCountdownCard({
     label: string; place: string; date: string; targetDate: Date | string;
     accentColor: string; accentColorDark: string; bgTint: string; borderTint: string; delay?: number;
 }) {
+    const { lang } = useLanguage();
     return (
         <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -556,13 +560,20 @@ function WeddingCountdownCard({
                 <Calendar size={12} style={{ color: accentColor }} />
                 <p className="text-xs" style={{ color: SKY_DEEP, opacity: 0.7 }}>{date}</p>
             </div>
-            <CountdownTimer targetDate={targetDate} textColor={accentColorDark} accentColor={accentColor} size="md" />
+            <CountdownTimer
+                targetDate={targetDate}
+                label={lang === "es" ? "Cuenta regresiva" : undefined}
+                textColor={accentColorDark}
+                accentColor={accentColor}
+                size="md"
+            />
         </motion.div>
     );
 }
 
 // ─── "Not attending either" fallback card ──────────────────────────────────
 function NoAttendanceNotice() {
+    const { lang } = useLanguage();
     return (
         <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -573,15 +584,15 @@ function NoAttendanceNotice() {
             style={{ backgroundColor: IVORY, border: `1px solid ${SAND}` }}
         >
             <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.85rem", fontWeight: 400, color: SKY_DEEP }}>
-                We&apos;ll miss you there
+                {lang === "es" ? "Te extrañaremos" : "We&apos;ll miss you there"}
             </h3>
             <p className="mt-4 leading-relaxed" style={{ color: SKY_DEEP, opacity: 0.7, fontSize: "0.9rem" }}>
-                It looks like you&apos;re not able to join us in Colombia or Florida right now — we understand, and we&apos;re
-                so grateful you&apos;re still part of our story. If you&apos;d like to celebrate with us from afar, you&apos;re
-                welcome to visit our registry.
+                {lang === "es"
+                    ? "Entendemos que no puedas acompañarnos en Colombia ni en Florida, y agradecemos muchísimo que sigas siendo parte de nuestra historia. Si quieres celebrar con nosotros a la distancia, puedes visitar nuestra lista de regalos."
+                    : "It looks like you&apos;re not able to join us in Colombia or Florida right now — we understand, and we&apos;re so grateful you&apos;re still part of our story. If you&apos;d like to celebrate with us from afar, you&apos;re welcome to visit our registry."}
             </p>
             <p className="mt-3 leading-relaxed" style={{ color: SKY_DEEP, opacity: 0.7, fontSize: "0.9rem" }}>
-                And if anything changes, just let us know — we can always update your RSVP.
+                {lang === "es" ? "Si tus planes cambian, avísanos y actualizaremos tu confirmación." : "And if anything changes, just let us know — we can always update your RSVP."}
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
@@ -590,7 +601,7 @@ function NoAttendanceNotice() {
                     style={{ backgroundColor: APRICOT, color: SKY_DEEP, letterSpacing: "0.2em" }}
                 >
                     <Gift size={14} />
-                    View Registry
+                    {lang === "es" ? "Ver lista de regalos" : "View Registry"}
                 </Link>
                 <Link
                     href="/rsvp"
@@ -598,7 +609,7 @@ function NoAttendanceNotice() {
                     style={{ border: `1px solid ${APRICOT}`, color: SKY_DEEP, letterSpacing: "0.2em" }}
                 >
                     <Mail size={14} />
-                    Update RSVP
+                    {lang === "es" ? "Actualizar confirmación" : "Update RSVP"}
                 </Link>
             </div>
         </motion.div>
@@ -620,6 +631,7 @@ function WeddingsSection({
     attendingBoth: boolean;
     attendingNeither: boolean;
 }) {
+    const { lang } = useLanguage();
     return (
         <section className="py-24 px-6" style={{ backgroundColor: SAND }}>
             <div className="max-w-6xl mx-auto">
@@ -631,16 +643,24 @@ function WeddingsSection({
                     className="text-center mb-16"
                 >
                     <p className="uppercase tracking-widest mb-4" style={{ color: APRICOT, fontSize: "0.6rem", letterSpacing: "0.3em" }}>
-                        {attendingBoth ? "Two Celebrations" : "Our Celebration"}
+                        {lang === "es"
+                            ? attendingBoth ? "Dos celebraciones" : "Nuestra celebración"
+                            : attendingBoth ? "Two Celebrations" : "Our Celebration"}
                     </p>
                     <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 300, color: SKY_DEEP, lineHeight: 1.1 }}>
-                        {attendingNeither ? "Celebrating With You, From Anywhere" : "You're Invited"}
+                        {lang === "es"
+                            ? attendingNeither ? "Celebramos contigo desde cualquier lugar" : "Estás invitado"
+                            : attendingNeither ? "Celebrating With You, From Anywhere" : "You're Invited"}
                     </h2>
                     {!attendingNeither && (
                         <p className="mt-4 max-w-md mx-auto" style={{ color: SKY_DEEP, opacity: 0.7, fontSize: "0.9rem" }}>
                             {attendingBoth
-                                ? "Two weddings, two countries, one unforgettable love story. We can't wait to celebrate with you. Here are the details for our big day."
-                                : "We can't wait to celebrate with you. Here are the details for our big day."}
+                                ? lang === "es"
+                                    ? "Dos bodas, dos países y una historia de amor inolvidable. ¡No vemos la hora de celebrar contigo! Aquí encontrarás los detalles."
+                                    : "Two weddings, two countries, one unforgettable love story. We can't wait to celebrate with you. Here are the details for our big day."
+                                : lang === "es"
+                                    ? "No vemos la hora de celebrar contigo. Aquí encontrarás los detalles de nuestro gran día."
+                                    : "We can't wait to celebrate with you. Here are the details for our big day."}
                         </p>
                     )}
                 </motion.div>
@@ -657,8 +677,8 @@ function WeddingsSection({
                         >
                             {attendingColombia && (
                                 <WeddingCard
-                                    title="Hacienda lindaraja"
-                                    date="June 12, 2027"
+                                    title={lang === "es" ? "Boda en Colombia" : "Colombia Wedding"}
+                                    date={formatLocalizedDate(new Date(WEDDING_DATES.colombia), lang)}
                                     location="Manizales, Colombia"
                                     image="/lin.jpeg"
                                     accentColor={SKY}
@@ -669,8 +689,8 @@ function WeddingsSection({
                             )}
                             {attendingFlorida && (
                                 <WeddingCard
-                                    title="Baughman Center"
-                                    date="April 24, 2027"
+                                    title={lang === "es" ? "Boda en Florida" : "Florida Wedding"}
+                                    date={formatLocalizedDate(new Date(WEDDING_DATES.usa), lang)}
                                     location="Gainesville, Florida"
                                     image="/baughman-center.jpg"
                                     accentColor={GREENERY}
@@ -689,9 +709,9 @@ function WeddingsSection({
                         >
                             {attendingColombia && (
                                 <WeddingCountdownCard
-                                    label="Colombia"
+                                    label={lang === "es" ? "Boda en Colombia" : "Colombia"}
                                     place="Pereira, Colombia"
-                                    date="June 12, 2027"
+                                    date={formatLocalizedDate(new Date(WEDDING_DATES.colombia), lang)}
                                     targetDate={WEDDING_DATES.colombia}
                                     accentColor={SKY}
                                     accentColorDark={SKY_MID}
@@ -702,9 +722,9 @@ function WeddingsSection({
                             )}
                             {attendingFlorida && (
                                 <WeddingCountdownCard
-                                    label="Florida"
+                                    label={lang === "es" ? "Boda en Florida" : "Florida"}
                                     place="Gainesville, Florida"
-                                    date="April 24, 2027"
+                                    date={formatLocalizedDate(new Date(WEDDING_DATES.usa), lang)}
                                     targetDate={WEDDING_DATES.usa}
                                     accentColor={GREENERY}
                                     accentColorDark={GREENERY_DARK}
@@ -745,6 +765,7 @@ function RSVPBannerSection({
     email?: string | null;
     phone?: string | null;
 }) {
+    const { lang } = useLanguage();
     const totalGuests = (plusOneCount ?? 0) + 1;
     const contactAddress = email || phone || null;
 
@@ -778,22 +799,24 @@ function RSVPBannerSection({
                     {attendingNeither ? (
                         <>
                             <p className="uppercase tracking-widest mb-4" style={{ color: SKY_DEEP, fontSize: "0.6rem", letterSpacing: "0.3em" }}>
-                                So Sorry To Miss You
+                                {lang === "es" ? "Sentimos que no puedas venir" : "So Sorry To Miss You"}
                             </p>
                             <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2.5rem, 6vw, 4.5rem)", fontWeight: 300, color: SKY_DEEP, lineHeight: 1.05 }}>
                                 {firstName ? (
-                                    <>We&apos;ll miss you, <span style={{ fontStyle: "italic" }}>{firstName}</span></>
+                                    <>{lang === "es" ? "Te extrañaremos," : "We&apos;ll miss you,"} <span style={{ fontStyle: "italic" }} translate="no">{firstName}</span></>
                                 ) : (
-                                    "We'll Miss You"
+                                    lang === "es" ? "Te extrañaremos" : "We'll Miss You"
                                 )}
                             </h2>
                             <p className="mt-6" style={{ color: SKY_DEEP, opacity: 0.8, fontSize: "0.95rem" }}>
-                                It looks like you won&apos;t be able to join us in Colombia or Florida — no worries at all,
-                                we&apos;re just happy you&apos;re part of our story.
+                                {lang === "es"
+                                    ? "Parece que no podrás acompañarnos en Colombia ni en Florida. No te preocupes, nos alegra que seas parte de nuestra historia."
+                                    : "It looks like you won&apos;t be able to join us in Colombia or Florida — no worries at all, we&apos;re just happy you&apos;re part of our story."}
                             </p>
                             <p className="mt-4" style={{ color: SKY_DEEP, opacity: 0.7, fontSize: "0.9rem" }}>
-                                You're welcome to celebrate from afar with a gift from our registry, and if plans change, we'd
-                                love to have you — just send us an updated RSVP any time.
+                                {lang === "es"
+                                    ? "Puedes celebrar con nosotros desde lejos con un regalo de nuestra lista. Si tus planes cambian, nos encantará recibirte; solo actualiza tu confirmación."
+                                    : "You're welcome to celebrate from afar with a gift from our registry, and if plans change, we'd love to have you — just send us an updated RSVP any time."}
                             </p>
                             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                                 <Link
@@ -802,38 +825,39 @@ function RSVPBannerSection({
                                     style={{ backgroundColor: SKY_DEEP, color: IVORY, letterSpacing: "0.2em" }}
                                 >
                                     <Gift size={14} />
-                                    View Registry
+                                    {lang === "es" ? "Ver lista de regalos" : "View Registry"}
                                 </Link>
                                 <Link
                                     href="/login"
                                     className="inline-flex items-center gap-2 px-10 py-4 rounded-full text-xs tracking-widest uppercase transition-all hover:opacity-70"
                                     style={{ border: `1px solid ${SKY_DEEP}`, color: SKY_DEEP, letterSpacing: "0.2em" }}
                                 >
-                                    Update My RSVP
+                                    {lang === "es" ? "Actualizar mi confirmación" : "Update My RSVP"}
                                 </Link>
                             </div>
                         </>
                     ) : (
                         <>
                             <p className="uppercase tracking-widest mb-4" style={{ color: SKY_DEEP, fontSize: "0.6rem", letterSpacing: "0.3em" }}>
-                                You&apos;re Confirmed
+                                {lang === "es" ? "Tu asistencia está confirmada" : "You&apos;re Confirmed"}
                             </p>
                             <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2.5rem, 6vw, 4.5rem)", fontWeight: 300, color: SKY_DEEP, lineHeight: 1.05 }}>
                                 {firstName ? (
-                                    <>Thank you, <span style={{ fontStyle: "italic" }}>{firstName}</span></>
+                                    <>{lang === "es" ? "Gracias," : "Thank you,"} <span style={{ fontStyle: "italic" }} translate="no">{firstName}</span></>
                                 ) : (
-                                    "Thank You"
+                                    lang === "es" ? "Gracias" : "Thank You"
                                 )}
                             </h2>
 
                             <p className="mt-6" style={{ color: SKY_DEEP, opacity: 0.8, fontSize: "0.95rem" }}>
-                                We&apos;ve saved your spot for {locationCopy}
-                                {totalGuests > 1 ? ` for ${totalGuests} guests` : ""}.
+                                {lang === "es" ? `Guardamos tu lugar para ${locationCopy === "Colombia and Florida" ? "Colombia y Florida" : locationCopy}` : `We&apos;ve saved your spot for ${locationCopy}`}
+                                {totalGuests > 1 ? lang === "es" ? ` para ${totalGuests} personas` : ` for ${totalGuests} guests` : "."}
                             </p>
 
                             <p className="mt-4 mb-2" style={{ color: SKY_DEEP, opacity: 0.7, fontSize: "0.9rem" }}>
-                                Your official RSVP invitation will be sent later
-                                {contactAddress ? " to:" : "."}
+                                {lang === "es"
+                                    ? `Te enviaremos la invitación oficial para confirmar tu asistencia${contactAddress ? " a:" : " más adelante."}`
+                                    : `Your official RSVP invitation will be sent later${contactAddress ? " to:" : "."}`}
                             </p>
 
                             {contactAddress && (
@@ -856,7 +880,7 @@ function RSVPBannerSection({
                                     className="inline-block px-10 py-4 rounded-full text-xs tracking-widest uppercase transition-all hover:opacity-90"
                                     style={{ backgroundColor: SKY_DEEP, color: IVORY, letterSpacing: "0.2em" }}
                                 >
-                                    View My Details
+                                    {lang === "es" ? "Ver mis datos" : "View My Details"}
                                 </Link>
                             </div>
                         </>

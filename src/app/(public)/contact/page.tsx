@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Mail, Phone, Heart } from "lucide-react";
 import { ContactForm } from "@/components/wedding/ContactForm";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-
-export const metadata: Metadata = { title: "Contact" };
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // ─── Palette — Sky Blue + Apricot + Ivory + Sand ───────────────────────────
 const SKY_DEEP = "#123B54";
@@ -12,21 +12,47 @@ const SAND_LIGHT = "#F2E8D5";
 const APRICOT = "#FFB482";
 
 export default function ContactPage() {
+    const { lang } = useLanguage();
+    const t = lang === "es"
+        ? {
+            reachOut: "Contáctanos",
+            getIn: "Ponte en",
+            touch: "contacto",
+            questions: "Nos encantaría saber de ti",
+            title: "¿Tienes preguntas?",
+            description: "Si tienes preguntas sobre viajes, hospedaje, vestimenta o cualquier otro tema, estamos aquí para ayudarte a que disfrutes una experiencia sencilla y alegre.",
+            email: "Correo electrónico",
+            whatsapp: "WhatsApp o mensaje",
+            responseTime: "Tiempo de respuesta",
+            response: "En un plazo de 48 horas",
+        }
+        : {
+            reachOut: "Reach Out",
+            getIn: "Get in",
+            touch: "Touch",
+            questions: "We'd love to hear from you",
+            title: "Questions?",
+            description: "Whether you have questions about travel, accommodations, attire, or anything else — we&apos;re here to help make your experience seamless and joyful.",
+            email: "Email",
+            whatsapp: "WhatsApp or text",
+            responseTime: "Response Time",
+            response: "Within 48 hours",
+        };
     return (
         <div style={{ backgroundColor: IVORY }}>
             <div className="pt-32 pb-20 px-6 text-center" style={{ backgroundColor: SKY_DEEP }}>
-                <p className="label-overline mb-4" style={{ color: APRICOT }}>Reach Out</p>
+                <p className="label-overline mb-4" style={{ color: APRICOT }}>{t.reachOut}</p>
                 <h1 className="heading-display" style={{ color: IVORY }}>
-                    Get in <span className="italic" style={{ color: APRICOT }}>Touch</span>
+                    {t.getIn} <span className="italic" style={{ color: APRICOT }}>{t.touch}</span>
                 </h1>
             </div>
 
             <section className="section-pad">
                 <div className="container-wedding mx-auto">
                     <div className="max-w-lg mx-auto text-center">
-                        <SectionHeader overline="We'd love to hear from you" title="Questions?" align="center" />
+                        <SectionHeader overline={t.questions} title={t.title} align="center" />
                         <p className="mt-4 text-sm leading-relaxed mx-auto" style={{ color: `${SKY_DEEP}99` }}>
-                            Whether you have questions about travel, accommodations, attire, or anything else — we&apos;re here to help make your experience seamless and joyful.
+                            {t.description}
                         </p>
                         <div className="mt-8 space-y-4 flex flex-col items-center">
                             <div className="flex items-center gap-3 justify-center">
@@ -34,7 +60,7 @@ export default function ContactPage() {
                                     <Mail size={16} style={{ color: APRICOT }} />
                                 </div>
                                 <div className="text-left">
-                                    <p className="label-overline mb-0.5" style={{ color: `${SKY_DEEP}66` }}>Email</p>
+                                    <p className="label-overline mb-0.5" style={{ color: `${SKY_DEEP}66` }}>{t.email}</p>
                                     <a
                                         href="mailto:causeycardenas@gmail.com"
                                         className="text-sm transition-colors"
@@ -49,7 +75,7 @@ export default function ContactPage() {
                                     <Phone size={16} style={{ color: APRICOT }} />
                                 </div>
                                 <div className="text-left">
-                                    <p className="label-overline mb-0.5" style={{ color: `${SKY_DEEP}66` }}>WhatsApp or text</p>
+                                    <p className="label-overline mb-0.5" style={{ color: `${SKY_DEEP}66` }}>{t.whatsapp}</p>
                                     <p className="text-sm" style={{ color: SKY_DEEP }}>+1 (813)464-1733 or (352)284-1736</p>
                                 </div>
                             </div>
@@ -58,8 +84,8 @@ export default function ContactPage() {
                                     <Heart size={16} style={{ color: APRICOT, fill: APRICOT }} />
                                 </div>
                                 <div className="text-left">
-                                    <p className="label-overline mb-0.5" style={{ color: `${SKY_DEEP}66` }}>Response Time</p>
-                                    <p className="text-sm" style={{ color: SKY_DEEP }}>Within 48 hours</p>
+                                    <p className="label-overline mb-0.5" style={{ color: `${SKY_DEEP}66` }}>{t.responseTime}</p>
+                                    <p className="text-sm" style={{ color: SKY_DEEP }}>{t.response}</p>
                                 </div>
                             </div>
                         </div>

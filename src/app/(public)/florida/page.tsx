@@ -8,6 +8,8 @@ import {
     Navigation, Umbrella, Sun, Footprints, CloudSun, ShieldCheck,
 } from 'lucide-react';
 import { CountdownTimer } from '../../../components/ui/CountdownTimer';
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { formatLocalizedDate } from "@/lib/utils";
 
 // ─── Wedding details ────────────────────────────────────────────────────────
 const FLORIDA_DATE = new Date('2027-04-24T18:00:00'); // 6:00 PM
@@ -36,6 +38,141 @@ const atAGlance = [
     { icon: MapPin, label: 'Venue', value: VENUE_NAME },
     { icon: Shirt, label: 'Dress Code', value: 'Black tie / formal' },
 ];
+
+type FloridaCopy = {
+    date: string;
+    time: string;
+    bannerTitle: string;
+    bannerBody: string;
+    intimateTitle: string;
+    intimateBody: string;
+    glanceLabels: string[];
+    route: { title: string; tag: string; body: string }[];
+    airportNames: string[];
+    airportBadges: string[];
+    airportPoints: string[][];
+    hotels: { name: string; note: string }[];
+    hotelNote: string;
+    packing: { label: string; note: string }[];
+    checklist: string[];
+    sectionTitles: { overline: string; title: string; italic: string }[];
+    directions: string;
+    cta: string;
+    ctaBody: string;
+    rsvp: string;
+};
+
+const COPY_EN: FloridaCopy = {
+    date: "April 24, 2027",
+    time: "6:00 PM ET",
+    bannerTitle: "More travel info coming soon!",
+    bannerBody: "Hotel blocks and transportation details are on the way. Here are the basics so you can start planning.",
+    intimateTitle: "A Small, Intimate Celebration 💛",
+    intimateBody: "A micro-intimate gathering with our closest family and friends, right by Lake Alice on the University of Florida campus. We're so glad you're part of it.",
+    glanceLabels: ["Date", "Time", "Venue", "Dress Code"],
+    route: [
+        { title: "Fly into Gainesville", tag: "GNV", body: "The closest and easiest airport." },
+        { title: "Rental car or rideshare", tag: "15 to 20 min", body: "From GNV to campus." },
+        { title: "Check in near campus", tag: "Book early", body: "Hotels fill up on busy weekends." },
+        { title: "Celebrate!", tag: "April 24", body: "Arrive the day before if you can." },
+    ],
+    airportNames: ["Gainesville Regional", "Jacksonville", "Orlando or Tampa"],
+    airportBadges: ["Best bet", "More flights", "Big hubs"],
+    airportPoints: [
+        ["About 15 to 20 minutes away", "Rideshare or rental car"],
+        ["About 1 hr 15 min drive", "Rental car recommended"],
+        ["About 2 hr drive", "Rental car recommended"],
+    ],
+    hotels: [
+        { name: "Hilton University of Florida Conference Center", note: "1714 SW 34th St · short drive from the venue" },
+        { name: "Hilton Garden Inn Gainesville", note: "Near Butler Plaza and Celebration Pointe" },
+        { name: "Sweetwater Branch Inn", note: "Historic bed and breakfast downtown" },
+    ],
+    hotelNote: "These are ideas for booking on your own. Official room blocks are coming soon.",
+    packing: [
+        { label: "Formal attire", note: "Black tie / formal" },
+        { label: "Comfy shoes", note: "Campus walking" },
+        { label: "A light layer", note: "Cool indoor AC" },
+        { label: "Umbrella", note: "Spring showers" },
+        { label: "Sunscreen", note: "Warm and sunny" },
+        { label: "Parking plan", note: "Parking is limited" },
+    ],
+    checklist: [
+        "Book your hotel early. University weekends fill up fast",
+        "Parking at the venue is limited, so carpool or rideshare",
+        "Plan to arrive the day before",
+        "Check the forecast a few days before you travel",
+        "Choose free-cancellation rates in case plans change",
+    ],
+    sectionTitles: [
+        { overline: "The Basics", title: "At a", italic: "Glance" },
+        { overline: "Getting There", title: "Your", italic: "Route" },
+        { overline: "Where To Land", title: "Choose Your", italic: "Airport" },
+        { overline: "Rest Your Head", title: "Where to", italic: "Stay" },
+        { overline: "Don't Forget", title: "Pack", italic: "Smart" },
+        { overline: "Your Checklist", title: "Before You", italic: "Go" },
+    ],
+    directions: "Get Directions",
+    cta: "Ready to celebrate in Gainesville?",
+    ctaBody: "Review the travel information on this page, then RSVP.",
+    rsvp: "RSVP for Florida",
+};
+
+const COPY_ES: typeof COPY_EN = {
+    date: "24 de abril de 2027",
+    time: "6:00 p. m. ET",
+    bannerTitle: "¡Pronto compartiremos más información de viaje!",
+    bannerBody: "Pronto tendremos información sobre bloques de habitaciones y transporte. Por ahora, estos son los datos básicos para empezar a planear.",
+    intimateTitle: "Una celebración pequeña e íntima 💛",
+    intimateBody: "Una reunión íntima con nuestra familia y amistades más cercanas, junto al lago Alice, en el campus de la Universidad de Florida. Nos alegra mucho que seas parte.",
+    glanceLabels: ["Fecha", "Hora", "Lugar", "Vestimenta"],
+    route: [
+        { title: "Vuela a Gainesville", tag: "GNV", body: "Es el aeropuerto más cercano y práctico." },
+        { title: "Alquila un auto o usa transporte por aplicación", tag: "15 a 20 min", body: "Desde GNV hasta el campus." },
+        { title: "Hospédate cerca del campus", tag: "Reserva pronto", body: "Los hoteles se llenan los fines de semana concurridos." },
+        { title: "¡A celebrar!", tag: "24 de abril", body: "Si puedes, llega el día anterior." },
+    ],
+    airportNames: ["Aeropuerto Regional de Gainesville", "Jacksonville", "Orlando o Tampa"],
+    airportBadges: ["Mejor opción", "Más vuelos", "Grandes centros"],
+    airportPoints: [
+        ["A unos 15 o 20 minutos", "Transporte por aplicación o auto de alquiler"],
+        ["A 1 hora y 15 minutos en auto", "Se recomienda alquilar un auto"],
+        ["A unas 2 horas en auto", "Se recomienda alquilar un auto"],
+    ],
+    hotels: [
+        { name: "Hilton University of Florida Conference Center", note: "1714 SW 34th St · A poca distancia en auto del lugar de la boda" },
+        { name: "Hilton Garden Inn Gainesville", note: "Cerca de Butler Plaza y Celebration Pointe" },
+        { name: "Sweetwater Branch Inn", note: "Hotel histórico tipo bed and breakfast en el centro" },
+    ],
+    hotelNote: "Estas son opciones para reservar por tu cuenta. Pronto compartiremos los bloques oficiales de habitaciones.",
+    packing: [
+        { label: "Vestimenta formal", note: "Etiqueta rigurosa / formal" },
+        { label: "Zapatos cómodos", note: "Para caminar por el campus" },
+        { label: "Una chaqueta ligera", note: "El aire acondicionado puede ser frío" },
+        { label: "Paraguas", note: "Lluvias de primavera" },
+        { label: "Protector solar", note: "Clima cálido y soleado" },
+        { label: "Plan de estacionamiento", note: "El estacionamiento es limitado" },
+    ],
+    checklist: [
+        "Reserva el hotel pronto; los fines de semana universitarios se llenan rápido",
+        "El estacionamiento es limitado; comparte auto o usa transporte por aplicación",
+        "Planea llegar el día anterior",
+        "Consulta el pronóstico unos días antes del viaje",
+        "Elige tarifas con cancelación gratuita por si cambian tus planes",
+    ],
+    sectionTitles: [
+        { overline: "Lo esencial", title: "De un", italic: "vistazo" },
+        { overline: "Cómo llegar", title: "Tu", italic: "ruta" },
+        { overline: "Dónde aterrizar", title: "Elige tu", italic: "aeropuerto" },
+        { overline: "Dónde hospedarte", title: "Dónde", italic: "alojarte" },
+        { overline: "No olvides", title: "Empaca con", italic: "inteligencia" },
+        { overline: "Tu lista", title: "Antes de", italic: "viajar" },
+    ],
+    directions: "Cómo llegar",
+    cta: "¿Listos para celebrar en Gainesville?",
+    ctaBody: "Consulta la información de viaje en esta página y confirma tu asistencia.",
+    rsvp: "Confirmar asistencia en Florida",
+};
 
 const route = [
     { icon: Plane, title: 'Fly into Gainesville', tag: 'GNV', body: 'The closest and easiest airport.' },
@@ -94,6 +231,9 @@ function SectionTitle({ overline, title, italic }: { overline: string; title: st
 }
 
 export default function FloridaPage() {
+    const { lang } = useLanguage();
+    const copy = lang === "es" ? COPY_ES : COPY_EN;
+    const weddingDate = formatLocalizedDate(FLORIDA_DATE, lang);
     return (
         <div style={{ backgroundColor: IVORY }}>
             {/* ─── Hero ─── */}
@@ -117,7 +257,7 @@ export default function FloridaPage() {
                 <div className="relative z-10 max-w-5xl mx-auto px-6 w-full">
                     <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9 }}>
                         <p className="uppercase tracking-widest mb-3" style={{ color: APRICOT, fontSize: '0.6rem', letterSpacing: '0.3em' }}>
-                            Florida Wedding 🇺🇸
+                            {lang === "es" ? "Boda en Florida 🇺🇸" : "Florida Wedding 🇺🇸"}
                         </p>
                         <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(3rem, 8vw, 5.5rem)', fontWeight: 300, color: IVORY, lineHeight: 1.0 }}>
                             Gainesville,
@@ -127,7 +267,7 @@ export default function FloridaPage() {
                         <div className="flex flex-wrap items-center gap-6 mt-6">
                             <div className="flex items-center gap-2">
                                 <Calendar size={14} style={{ color: APRICOT }} />
-                                <span className="text-sm" style={{ color: IVORY }}>April 24, 2027</span>
+                                <span className="text-sm" style={{ color: IVORY }}>{weddingDate}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <MapPin size={14} style={{ color: APRICOT }} />
@@ -135,7 +275,7 @@ export default function FloridaPage() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <Clock size={14} style={{ color: APRICOT }} />
-                                <span className="text-sm" style={{ color: IVORY }}>6:00 PM ET</span>
+                                <span className="text-sm" style={{ color: IVORY }}>{copy.time}</span>
                             </div>
                         </div>
                     </motion.div>
@@ -145,7 +285,7 @@ export default function FloridaPage() {
             {/* ─── Countdown ─── */}
             <div className="py-10 px-6 flex flex-col items-center" style={{ background: `linear-gradient(to right, ${SKY_DEEP}, ${GREENERY})` }}>
                 <p className="uppercase tracking-widest mb-4" style={{ color: 'rgba(255,247,236,0.75)', fontSize: '0.55rem', letterSpacing: '0.3em' }}>
-                    Counting Down To Florida
+                    {lang === "es" ? "Cuenta regresiva para Florida" : "Counting Down To Florida"}
                 </p>
                 <CountdownTimer targetDate={FLORIDA_DATE} textColor={IVORY} accentColor={APRICOT} size="lg" />
             </div>
@@ -161,8 +301,7 @@ export default function FloridaPage() {
             >
                 <Sparkles size={16} />
                 <p className="text-sm">
-                    <strong>More travel info coming soon!</strong> Hotel blocks and transportation details are on the way.
-                    Here are the basics so you can start planning.
+                    <strong>{copy.bannerTitle}</strong> {copy.bannerBody}
                 </p>
             </motion.div>
 
@@ -177,11 +316,10 @@ export default function FloridaPage() {
                     style={{ backgroundColor: APRICOT_LIGHT, border: `1px solid ${APRICOT}` }}
                 >
                     <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.75rem', fontWeight: 400, color: SKY_DEEP }}>
-                        A Small, Intimate Celebration 💛
+                        {copy.intimateTitle}
                     </h2>
                     <p className="mt-3 text-sm leading-relaxed" style={{ color: SKY_DEEP, opacity: 0.75 }}>
-                        A micro-intimate gathering with our closest family and friends, right by Lake Alice on the
-                        University of Florida campus. We're so glad you're part of it.
+                        {copy.intimateBody}
                     </p>
                 </motion.div>
             </section>
@@ -189,7 +327,7 @@ export default function FloridaPage() {
             {/* ─── At a glance ─── */}
             <section className="py-16 px-6" style={{ backgroundColor: SAND_LIGHT }}>
                 <div className="max-w-4xl mx-auto">
-                    <SectionTitle overline="The Basics" title="At a" italic="Glance" />
+                    <SectionTitle {...copy.sectionTitles[0]} />
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {atAGlance.map((item, i) => (
                             <motion.div
@@ -205,8 +343,8 @@ export default function FloridaPage() {
                                 <div className="w-11 h-11 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: GREENERY }}>
                                     <item.icon size={18} style={{ color: IVORY }} />
                                 </div>
-                                <p className="text-xs uppercase tracking-widest mb-1" style={{ color: GREENERY, letterSpacing: '0.12em' }}>{item.label}</p>
-                                <p className="text-sm font-medium" style={{ color: SKY_DEEP }}>{item.value}</p>
+                                <p className="text-xs uppercase tracking-widest mb-1" style={{ color: GREENERY, letterSpacing: '0.12em' }}>{copy.glanceLabels[i]}</p>
+                                <p className="text-sm font-medium" style={{ color: SKY_DEEP }}>{i === 0 ? weddingDate : i === 1 ? copy.time : item.value}</p>
                             </motion.div>
                         ))}
                     </div>
@@ -223,7 +361,7 @@ export default function FloridaPage() {
                             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs uppercase tracking-widest transition-all hover:opacity-90"
                             style={{ backgroundColor: SKY_DEEP, color: IVORY, letterSpacing: '0.15em' }}
                         >
-                            <Navigation size={12} /> Get Directions
+                            <Navigation size={12} /> {copy.directions}
                         </a>
                     </div>
                 </div>
@@ -232,7 +370,7 @@ export default function FloridaPage() {
             {/* ─── Your route ─── */}
             <section className="py-20 px-6">
                 <div className="max-w-5xl mx-auto">
-                    <SectionTitle overline="Getting There" title="Your" italic="Route" />
+                    <SectionTitle {...copy.sectionTitles[1]} />
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {route.map((step, i) => (
                             <motion.div
@@ -252,11 +390,11 @@ export default function FloridaPage() {
                                     {i + 1}
                                 </span>
                                 <step.icon size={22} style={{ color: GREENERY }} className="mb-3" />
-                                <h3 className="font-serif text-lg mb-1" style={{ color: SKY_DEEP }}>{step.title}</h3>
+                                <h3 className="font-serif text-lg mb-1" style={{ color: SKY_DEEP }}>{copy.route[i].title}</h3>
                                 <span className="inline-block text-xs px-2 py-0.5 rounded-full mb-2" style={{ backgroundColor: IVORY, color: SKY_DEEP }}>
-                                    {step.tag}
+                                    {copy.route[i].tag}
                                 </span>
-                                <p className="text-sm" style={{ color: `${SKY_DEEP}99` }}>{step.body}</p>
+                                <p className="text-sm" style={{ color: `${SKY_DEEP}99` }}>{copy.route[i].body}</p>
                             </motion.div>
                         ))}
                     </div>
@@ -266,7 +404,7 @@ export default function FloridaPage() {
             {/* ─── Airports ─── */}
             <section className="py-20 px-6" style={{ backgroundColor: SAND_LIGHT }}>
                 <div className="max-w-5xl mx-auto">
-                    <SectionTitle overline="Where To Land" title="Choose Your" italic="Airport" />
+                    <SectionTitle {...copy.sectionTitles[2]} />
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {airports.map((a, i) => (
                             <motion.div
@@ -284,15 +422,15 @@ export default function FloridaPage() {
                                         {a.code}
                                     </span>
                                     <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: i === 0 ? APRICOT : GREEN_LIGHT, color: SKY_DEEP }}>
-                                        {a.badge}
+                                        {copy.airportBadges[i]}
                                     </span>
                                 </div>
-                                <h3 className="font-serif text-lg mb-3" style={{ color: SKY_DEEP }}>{a.name}</h3>
+                                <h3 className="font-serif text-lg mb-3" style={{ color: SKY_DEEP }}>                                {copy.airportNames[i]}</h3>
                                 <ul className="space-y-1.5">
-                                    {a.points.map((p) => (
+                                    {a.points.map((p, pointIndex) => (
                                         <li key={p} className="flex items-start gap-2 text-sm" style={{ color: `${SKY_DEEP}cc` }}>
                                             <CheckCircle2 size={14} style={{ color: GREENERY, marginTop: 3, flexShrink: 0 }} />
-                                            {p}
+                                            {copy.airportPoints[i][pointIndex]}
                                         </li>
                                     ))}
                                 </ul>
@@ -305,7 +443,7 @@ export default function FloridaPage() {
             {/* ─── Where to stay ─── */}
             <section className="py-20 px-6">
                 <div className="max-w-3xl mx-auto">
-                    <SectionTitle overline="Rest Your Head" title="Where to" italic="Stay" />
+                    <SectionTitle {...copy.sectionTitles[3]} />
                     <div className="grid gap-3">
                         {stay.map((h, i) => (
                             <motion.div
@@ -322,13 +460,13 @@ export default function FloridaPage() {
                                 </div>
                                 <div>
                                     <p className="font-serif text-base" style={{ color: SKY_DEEP }}>{h.name}</p>
-                                    <p className="text-xs mt-0.5" style={{ color: `${SKY_DEEP}99` }}>{h.note}</p>
+                                    <p className="text-xs mt-0.5" style={{ color: `${SKY_DEEP}99` }}>{copy.hotels[i].note}</p>
                                 </div>
                             </motion.div>
                         ))}
                     </div>
                     <p className="text-center text-xs mt-5" style={{ color: `${SKY_DEEP}99` }}>
-                        These are ideas for booking on your own. Official room blocks are coming soon.
+                        {copy.hotelNote}
                     </p>
                 </div>
             </section>
@@ -336,7 +474,7 @@ export default function FloridaPage() {
             {/* ─── Pack smart ─── */}
             <section className="py-20 px-6" style={{ backgroundColor: SAND_LIGHT }}>
                 <div className="max-w-4xl mx-auto">
-                    <SectionTitle overline="Don't Forget" title="Pack" italic="Smart" />
+                    <SectionTitle {...copy.sectionTitles[4]} />
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {packList.map((p, i) => (
                             <motion.div
@@ -350,8 +488,8 @@ export default function FloridaPage() {
                                 style={{ backgroundColor: IVORY, border: `1px solid ${SAND}` }}
                             >
                                 <p.icon size={22} style={{ color: GREENERY }} className="mx-auto mb-2" />
-                                <p className="text-sm font-medium" style={{ color: SKY_DEEP }}>{p.label}</p>
-                                <p className="text-xs mt-0.5" style={{ color: `${SKY_DEEP}99` }}>{p.note}</p>
+                                <p className="text-sm font-medium" style={{ color: SKY_DEEP }}>{copy.packing[i].label}</p>
+                                <p className="text-xs mt-0.5" style={{ color: `${SKY_DEEP}99` }}>{copy.packing[i].note}</p>
                             </motion.div>
                         ))}
                     </div>
@@ -361,7 +499,7 @@ export default function FloridaPage() {
             {/* ─── Before you go ─── */}
             <section className="py-20 px-6">
                 <div className="max-w-3xl mx-auto">
-                    <SectionTitle overline="Your Checklist" title="Before You" italic="Go" />
+                    <SectionTitle {...copy.sectionTitles[5]} />
                     <div className="grid gap-3">
                         {checklist.map((c, i) => (
                             <motion.div
@@ -374,7 +512,7 @@ export default function FloridaPage() {
                                 style={{ backgroundColor: IVORY, border: `1px solid ${SAND}` }}
                             >
                                 <c.icon size={18} style={{ color: GREENERY, flexShrink: 0 }} />
-                                <p className="text-sm" style={{ color: SKY_DEEP }}>{c.text}</p>
+                                <p className="text-sm" style={{ color: SKY_DEEP }}>{copy.checklist[i]}</p>
                             </motion.div>
                         ))}
                     </div>
@@ -387,25 +525,18 @@ export default function FloridaPage() {
                     <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
                         <Sparkles size={32} className="mx-auto mb-6" style={{ color: 'rgba(255,247,236,0.7)' }} />
                         <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 300, color: IVORY, lineHeight: 1.1 }}>
-                            Ready to celebrate in <span style={{ fontStyle: 'italic', color: APRICOT }}>Gainesville?</span>
+                            {copy.cta}
                         </h2>
                         <p className="mt-4 mb-8" style={{ color: 'rgba(255,247,236,0.8)', fontSize: '0.9rem' }}>
-                            RSVP, then check back for travel updates.
+                            {copy.ctaBody}
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <Link
-                                href="/travel"
-                                className="px-8 py-3 rounded-full text-xs uppercase tracking-widest transition-all hover:opacity-90"
-                                style={{ backgroundColor: IVORY, color: SKY_DEEP, letterSpacing: '0.2em' }}
-                            >
-                                Travel Details
-                            </Link>
+                        <div className="flex justify-center">
                             <Link
                                 href="/rsvp"
                                 className="px-8 py-3 rounded-full text-xs uppercase tracking-widest transition-all hover:bg-white/10"
                                 style={{ border: '1px solid rgba(255,247,236,0.5)', color: IVORY, letterSpacing: '0.2em' }}
                             >
-                                RSVP for Florida
+                                {copy.rsvp}
                             </Link>
                         </div>
                     </motion.div>

@@ -72,7 +72,7 @@ schema/
 
 src/
 ├── app/
-│   ├── (public)/           ← Public pages (home, events, travel, rsvp…)
+│   ├── (public)/           ← Public pages (home, Colombia, Florida, RSVP…)
 │   ├── (admin)/            ← Auth-guarded admin dashboard
 │   ├── admin/login/        ← Login page (outside auth group)
 │   ├── api/
@@ -89,7 +89,7 @@ src/
 │   │   └── SupabaseProvider.tsx  ← Client auth context (useSupabase hook)
 │   ├── rsvp/               ← RSVPFlow (multi-step, code → form → submit)
 │   ├── ui/                 ← SectionHeader, CountdownTimer
-│   └── wedding/            ← ContactForm, FAQAccordion, TravelTabs
+│   └── wedding/            ← ContactForm, FAQAccordion
 │
 ├── lib/
 │   ├── supabase.ts         ← createBrowserClient, createServerClient, createAdminClient

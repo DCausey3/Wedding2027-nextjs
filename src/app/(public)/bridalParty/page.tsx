@@ -5,6 +5,7 @@ import { motion, animate, useInView, useReducedMotion } from 'motion/react';
 import { MapPin, Heart, Sparkles, Star } from 'lucide-react';
 import Link from "next/link";
 import Image from "next/image";
+import { useLanguage, type Language } from "@/components/providers/LanguageProvider";
 
 // Setup notes
 // 1. npm i canvas-confetti && npm i -D @types/canvas-confetti
@@ -26,11 +27,11 @@ interface Member {
     role: string;
     side: 'bride' | 'groom';
     location: string; // "City, State"
-    howTheyKnowUs: string;
+    howTheyKnowUs: Record<Language, string>;
     photo?: string;       // optional — falls back to initials avatar
     featured?: boolean;   // headliners get the spotlight row
-    superlative?: string; // fun "most likely to..." line shown on the back of the card
-    funFact?: string;     // optional extra line on the back of the card
+    superlative?: Record<Language, string>; // fun "most likely to..." line shown on the back of the card
+    funFact?: Record<Language, string>; // optional extra line on the back of the card
     tag?: string;         // small chip, e.g. "Causey Brother #1"
 }
 
@@ -40,50 +41,50 @@ interface Member {
 const BRIDAL_PARTY: Member[] = [
     // ---- Jhoana's side ----
     { name: 'Vivi Cardenas', role: 'Matron of Honor', side: 'bride', location: 'Atlanta, Georgia', featured: true,
-      howTheyKnowUs: 'Cousin’s wife who became an older sister',
-      superlative: 'Most likely to have a tissue ready before you need one' },
+      howTheyKnowUs: { en: 'Cousin’s wife who became an older sister', es: 'La esposa de mi primo, que se convirtió en una hermana mayor' },
+      superlative: { en: 'Most likely to have a tissue ready before you need one', es: 'La más preparada para ofrecerte un pañuelo antes de que lo pidas' } },
     { name: 'Alejandra Cardenas', role: 'Co-Maid of Honor', side: 'bride', location: 'Tampa, Florida', featured: true,
-      howTheyKnowUs: 'Twin sister',
-      superlative: 'Most likely to finish the bride’s sentences' },
+      howTheyKnowUs: { en: 'Twin sister', es: 'Hermana gemela' },
+      superlative: { en: 'Most likely to finish the bride’s sentences', es: 'La que probablemente termine las frases de la novia' } },
     { name: 'Tori Levy', role: 'Co-Maid of Honor', side: 'bride', location: 'Tampa, Florida', featured: true,
-      howTheyKnowUs: 'Childhood best friend of the bride',
-      superlative: 'Knows every embarrassing story and promises not to tell' },
+      howTheyKnowUs: { en: 'Childhood best friend of the bride', es: 'Mejor amiga de la novia desde la infancia' },
+      superlative: { en: 'Knows every embarrassing story and promises not to tell', es: 'Conoce todas las historias vergonzosas y promete no contarlas' } },
     { name: 'Angelica Guinand', role: 'Co-Maid of Honor', side: 'bride', location: 'Tampa, Florida', featured: true,
-      howTheyKnowUs: 'Childhood best friend of the bride',
-      superlative: 'Most likely to start the dance floor' },
+      howTheyKnowUs: { en: 'Childhood best friend of the bride', es: 'Mejor amiga de la novia desde la infancia' },
+      superlative: { en: 'Most likely to start the dance floor', es: 'La que seguramente abrirá la pista de baile' } },
     { name: 'Anabelle Manriquez', role: 'Bridesmaid', side: 'bride', location: 'Tampa, Florida',
-      howTheyKnowUs: 'Family friend',
-      superlative: 'Most likely to be the calm in the chaos' },
+      howTheyKnowUs: { en: 'Family friend', es: 'Amiga de la familia' },
+      superlative: { en: 'Most likely to be the calm in the chaos', es: 'La calma en medio del caos' } },
     { name: 'Angelica Peregrino', role: 'Bridesmaid', side: 'bride', location: 'Dallas, Texas',
-      howTheyKnowUs: 'Sister-in-law',
-      superlative: 'Traveling the farthest with the biggest smile' },
+      howTheyKnowUs: { en: 'Sister-in-law', es: 'Cuñada' },
+      superlative: { en: 'Traveling the farthest with the biggest smile', es: 'La que viaja desde más lejos con la sonrisa más grande' } },
     { name: 'Andrea Figueroa', role: 'Bridesmaid', side: 'bride', location: 'Tampa, Florida',
-      howTheyKnowUs: 'Family friend',
-      superlative: 'Most likely to organize the group photo' },
+      howTheyKnowUs: { en: 'Family friend', es: 'Amiga de la familia' },
+      superlative: { en: 'Most likely to organize the group photo', es: 'La que seguramente organizará la foto grupal' } },
 
     // ---- Damariel's side ----
     { name: 'Steve Atkins', role: 'Co-Best Man', side: 'groom', location: 'Orlando, Florida', featured: true,
-      howTheyKnowUs: 'Best friend from high school — we played basketball and baseball together',
-      superlative: 'Most likely to give the toast that makes everyone cry-laugh' },
+      howTheyKnowUs: { en: 'Best friend from high school — we played basketball and baseball together', es: 'Mejor amigo de la secundaria; jugábamos juntos al baloncesto y al béisbol' },
+      superlative: { en: 'Most likely to give the toast that makes everyone cry-laugh', es: 'El que seguramente dará un brindis que hará llorar de risa a todos' } },
     { name: 'David Green', role: 'Co-Best Man', side: 'groom', location: 'Gainesville, Florida', featured: true,
-      howTheyKnowUs: 'Best friend since 2nd grade',
-      superlative: 'Has the longest receipts on the groom' },
+      howTheyKnowUs: { en: 'Best friend since 2nd grade', es: 'Mejor amigo desde segundo grado' },
+      superlative: { en: 'Has the longest receipts on the groom', es: 'Tiene las historias más antiguas del novio' } },
     { name: 'Ivan Cardenas', role: 'Groomsman', side: 'groom', location: 'Tampa, Florida',
-      howTheyKnowUs: 'The bride’s brother who turned into a little brother to the groom',
-      superlative: 'Official bridge between both families' },
+      howTheyKnowUs: { en: 'The bride’s brother who turned into a little brother to the groom', es: 'Hermano de la novia que se convirtió en un hermano menor para el novio' },
+      superlative: { en: 'Official bridge between both families', es: 'El puente oficial entre ambas familias' } },
     // Causey brothers, oldest to youngest
     { name: 'Nick Causey', role: 'Groomsman', side: 'groom', location: 'Pensacola, Florida', tag: 'Causey Brother #1',
-      howTheyKnowUs: 'Oldest brother',
-      superlative: 'Original big brother energy' },
+      howTheyKnowUs: { en: 'Oldest brother', es: 'Hermano mayor' },
+      superlative: { en: 'Original big brother energy', es: 'La energía del hermano mayor de siempre' } },
     { name: 'Brandon Causey', role: 'Groomsman', side: 'groom', location: 'Atlanta, Georgia', tag: 'Causey Brother #2',
-      howTheyKnowUs: 'Second oldest brother',
-      superlative: 'Most likely to steal the mic' },
+      howTheyKnowUs: { en: 'Second oldest brother', es: 'Segundo hermano mayor' },
+      superlative: { en: 'Most likely to steal the mic', es: 'El que seguramente tomará el micrófono' } },
     { name: 'Davinus Causey', role: 'Groomsman', side: 'groom', location: 'Tampa, Florida', tag: 'Causey Brother #3',
-      howTheyKnowUs: 'Third oldest brother',
-      superlative: 'Always first at the food table' },
+      howTheyKnowUs: { en: 'Third oldest brother', es: 'Tercer hermano mayor' },
+      superlative: { en: 'Always first at the food table', es: 'Siempre será el primero en llegar a la mesa de comida' } },
     { name: 'Damarcus Causey', role: 'Groomsman', side: 'groom', location: 'Dallas, Texas', tag: 'Causey Brother #4',
-      howTheyKnowUs: 'Fourth oldest brother',
-      superlative: 'Will definitely lead the dance floor' },
+      howTheyKnowUs: { en: 'Fourth oldest brother', es: 'Cuarto hermano mayor' },
+      superlative: { en: 'Will definitely lead the dance floor', es: 'Sin duda liderará la pista de baile' } },
 ];
 
 const ACCENTS = [SKY_DEEP, APRICOT, "#7FAA6E", "#A4D4F4", "#c98a55", "#5FA8D3"];
@@ -95,6 +96,18 @@ function roleEmoji(role: string) {
     if (r.includes('bridesmaid')) return '💐';
     if (r.includes('groomsman')) return '🤵';
     return '✨';
+}
+
+function roleLabel(role: string, language: Language) {
+    if (language === "en") return role;
+    const spanishRoles: Record<string, string> = {
+        "Matron of Honor": "Dama de honor principal",
+        "Co-Maid of Honor": "Codama de honor",
+        Bridesmaid: "Dama de honor",
+        "Co-Best Man": "Copadrino",
+        Groomsman: "Padrino",
+    };
+    return spanishRoles[role] ?? role;
 }
 
 const brideFeatured = BRIDAL_PARTY.filter((m) => m.side === 'bride' && m.featured);
@@ -141,6 +154,7 @@ function CountUp({ to, suffix = '' }: { to: number; suffix?: string }) {
 
 // ---------- Flip card ----------
 function MemberCard({ member, index, featured = false }: { member: Member; index: number; featured?: boolean }) {
+    const { lang } = useLanguage();
     const [flipped, setFlipped] = useState(false);
     const reduce = useReducedMotion();
 
@@ -195,7 +209,7 @@ function MemberCard({ member, index, featured = false }: { member: Member; index
             <div
                 role="button"
                 tabIndex={0}
-                aria-label={`${member.name}, ${member.role}. ${flipped ? 'Showing their story. Press to flip back.' : 'Press to read their story.'}`}
+                aria-label={`${member.name}, ${roleLabel(member.role, lang)}. ${flipped ? lang === "es" ? "Se muestra su historia. Pulsa para volver." : "Showing their story. Press to flip back." : lang === "es" ? "Pulsa para leer su historia." : "Press to read their story."}`}
                 onClick={(e) => toggle(e.currentTarget)}
                 onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -251,23 +265,23 @@ function MemberCard({ member, index, featured = false }: { member: Member; index
                                     className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full uppercase"
                                     style={{ backgroundColor: IVORY, color: SKY_DEEP, fontSize: '0.55rem', letterSpacing: '0.1em' }}
                                 >
-                                    {member.tag}
+                                    {lang === "es" ? member.tag.replace("Causey Brother", "Hermano Causey") : member.tag}
                                 </span>
                             )}
                         </div>
 
                         <div className="text-center py-3">
                             <p style={{ fontFamily: HAND, fontSize: featured ? '1.7rem' : '1.4rem', color: SKY_DEEP, lineHeight: 1.1 }}>
-                                {member.name}
+                                <span translate="no">{member.name}</span>
                             </p>
                             <p
                                 className="uppercase mt-1"
                                 style={{ color: sideColor, fontSize: '0.6rem', letterSpacing: '0.15em' }}
                             >
-                                {member.role}
+                                {roleLabel(member.role, lang)}
                             </p>
                             <p className="mt-1.5" style={{ fontSize: '0.55rem', color: SKY_DEEP, opacity: 0.4, letterSpacing: '0.1em' }}>
-                                TAP TO FLIP
+                                {lang === "es" ? "TOCA PARA GIRAR" : "TAP TO FLIP"}
                             </p>
                         </div>
                     </div>
@@ -290,27 +304,27 @@ function MemberCard({ member, index, featured = false }: { member: Member; index
                     >
                         <Star size={16} style={{ color: APRICOT, fill: APRICOT }} className="mb-2 flex-shrink-0" />
                         <h3 style={{ fontFamily: SERIF, fontSize: '1.3rem', fontWeight: 400, color: IVORY, lineHeight: 1.15 }}>
-                            {member.name}
+                            <span translate="no">{member.name}</span>
                         </h3>
                         <div className="flex items-center gap-1 mt-1">
                             <MapPin size={10} style={{ color: APRICOT }} />
-                            <p style={{ fontSize: '0.7rem', color: 'rgba(255,247,236,0.7)' }}>{member.location}</p>
+                            <p style={{ fontSize: '0.7rem', color: 'rgba(255,247,236,0.7)' }} translate="no">{member.location}</p>
                         </div>
 
                         <div className="w-8 h-px my-3" style={{ backgroundColor: APRICOT, opacity: 0.6 }} />
 
                         <p className="italic leading-relaxed" style={{ fontSize: '0.8rem', color: 'rgba(255,247,236,0.85)' }}>
-                            &ldquo;{member.howTheyKnowUs.trim()}&rdquo;
+                            &ldquo;{member.howTheyKnowUs[lang].trim()}&rdquo;
                         </p>
 
                         {member.superlative && (
                             <p className="mt-3" style={{ fontFamily: HAND, fontSize: '1.15rem', color: APRICOT, lineHeight: 1.15 }}>
-                                {member.superlative}
+                                {member.superlative[lang]}
                             </p>
                         )}
                         {member.funFact && (
                             <p className="mt-2" style={{ fontSize: '0.7rem', color: 'rgba(255,247,236,0.6)' }}>
-                                Fun fact: {member.funFact}
+                                {lang === "es" ? "Dato curioso: " : "Fun fact: "}{member.funFact[lang]}
                             </p>
                         )}
                     </div>
@@ -326,6 +340,7 @@ function SideSection({
 }: {
     title: string; tagline: string; featured: Member[]; rest: Member[]; startIndex: number; accentTag: string;
 }) {
+    const { lang } = useLanguage();
     return (
         <div className="mb-8 last:mb-0">
             <motion.div
@@ -349,7 +364,7 @@ function SideSection({
                         className="uppercase mb-6 flex items-center gap-2"
                         style={{ fontSize: '0.6rem', letterSpacing: '0.25em', color: accentTag }}
                     >
-                        <Sparkles size={11} /> In the spotlight
+                        <Sparkles size={11} /> {lang === "es" ? "En primer plano" : "In the spotlight"}
                     </p>
                     <div className="flex flex-wrap justify-center gap-8">
                         {featured.map((m, i) => (
@@ -373,6 +388,7 @@ function SideSection({
 
 // ---------- Face-off banner ----------
 function FaceOff() {
+    const { lang } = useLanguage();
     return (
         <div className="relative my-24 overflow-hidden rounded-3xl" style={{ backgroundColor: SKY_DEEP }}>
             <div className="grid grid-cols-2 relative">
@@ -384,9 +400,9 @@ function FaceOff() {
                     className="py-10 px-4 text-center"
                     style={{ background: `linear-gradient(120deg, ${PINK}cc, ${PINK}33)`, clipPath: 'polygon(0 0, 100% 0, 92% 100%, 0 100%)' }}
                 >
-                    <p className="uppercase" style={{ fontSize: '0.6rem', letterSpacing: '0.25em', color: IVORY }}>Team</p>
-                    <p style={{ fontFamily: SERIF, fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', color: IVORY, fontWeight: 300 }}>Jhoana</p>
-                    <p className="mt-1" style={{ fontSize: '0.7rem', color: 'rgba(255,247,236,0.8)' }}>{brideFeatured.length + brideRest.length} strong</p>
+                    <p className="uppercase" style={{ fontSize: '0.6rem', letterSpacing: '0.25em', color: IVORY }}>{lang === "es" ? "Equipo" : "Team"}</p>
+                    <p translate="no" style={{ fontFamily: SERIF, fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', color: IVORY, fontWeight: 300 }}>Jhoana</p>
+                    <p className="mt-1" style={{ fontSize: '0.7rem', color: 'rgba(255,247,236,0.8)' }}>{brideFeatured.length + brideRest.length} {lang === "es" ? "integrantes" : "strong"}</p>
                 </motion.div>
                 <motion.div
                     initial={{ x: 120, opacity: 0 }}
@@ -396,9 +412,9 @@ function FaceOff() {
                     className="py-10 px-4 text-center"
                     style={{ background: `linear-gradient(240deg, ${APRICOT}dd, ${APRICOT}33)`, clipPath: 'polygon(8% 0, 100% 0, 100% 100%, 0 100%)' }}
                 >
-                    <p className="uppercase" style={{ fontSize: '0.6rem', letterSpacing: '0.25em', color: SKY_DEEP }}>Team</p>
-                    <p style={{ fontFamily: SERIF, fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', color: SKY_DEEP, fontWeight: 400 }}>Damariel</p>
-                    <p className="mt-1" style={{ fontSize: '0.7rem', color: SKY_DEEP, opacity: 0.7 }}>{groomFeatured.length + groomRest.length} strong</p>
+                    <p className="uppercase" style={{ fontSize: '0.6rem', letterSpacing: '0.25em', color: SKY_DEEP }}>{lang === "es" ? "Equipo" : "Team"}</p>
+                    <p translate="no" style={{ fontFamily: SERIF, fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', color: SKY_DEEP, fontWeight: 400 }}>Damariel</p>
+                    <p className="mt-1" style={{ fontSize: '0.7rem', color: SKY_DEEP, opacity: 0.7 }}>{groomFeatured.length + groomRest.length} {lang === "es" ? "integrantes" : "strong"}</p>
                 </motion.div>
             </div>
             <motion.div
@@ -412,7 +428,7 @@ function FaceOff() {
                 <Heart size={18} style={{ color: PINK, fill: PINK }} />
             </motion.div>
             <p className="text-center pb-6 pt-2" style={{ fontSize: '0.75rem', color: 'rgba(255,247,236,0.6)' }}>
-                Two teams. One very loud cheering section.
+                {lang === "es" ? "Dos equipos. Una sola y muy ruidosa hinchada." : "Two teams. One very loud cheering section."}
             </p>
         </div>
     );
@@ -456,6 +472,7 @@ function Floaters() {
 
 // ---------- Page ----------
 export default function BridalPartyPage() {
+    const { lang } = useLanguage();
     const reduce = useReducedMotion();
 
     // Welcome confetti from both sides when the page loads
@@ -471,9 +488,9 @@ export default function BridalPartyPage() {
     const marqueeNames = BRIDAL_PARTY.map((m) => m.name);
 
     const stats = [
-        { num: BRIDAL_PARTY.length, label: 'Incredible Humans' },
-        { num: CITIES.length, label: 'Cities Represented' },
-        { num: STATES.length, label: 'States, One Wedding Squad' },
+        { num: BRIDAL_PARTY.length, label: lang === "es" ? "Personas increíbles" : 'Incredible Humans' },
+        { num: CITIES.length, label: lang === "es" ? "Ciudades representadas" : 'Cities Represented' },
+        { num: STATES.length, label: lang === "es" ? "Estados, un solo equipo" : 'States, One Wedding Squad' },
     ];
 
     return (
@@ -497,15 +514,16 @@ export default function BridalPartyPage() {
                 <div className="relative z-10 max-w-4xl mx-auto text-center">
                     <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
                         <p className="uppercase tracking-widest mb-4 flex items-center justify-center gap-2" style={{ color: APRICOT, fontSize: '0.65rem', letterSpacing: '0.3em' }}>
-                            <Sparkles size={12} /> The Real MVPs
+                            <Sparkles size={12} /> {lang === "es" ? "Los verdaderos MVP" : "The Real MVPs"}
                         </p>
                         <h1 style={{ fontFamily: SERIF, fontSize: 'clamp(2.5rem, 7vw, 5rem)', fontWeight: 300, color: IVORY, lineHeight: 1.05 }}>
-                            Meet the{' '}
-                            <span style={{ fontStyle: 'italic', color: APRICOT }}>Bridal Party</span>
+                            {lang === "es" ? "Conoce al" : "Meet the"}{' '}
+                            <span style={{ fontStyle: 'italic', color: APRICOT }}>{lang === "es" ? "cortejo nupcial" : "Bridal Party"}</span>
                         </h1>
                         <p className="mt-4 max-w-lg mx-auto" style={{ color: 'rgba(255,247,236,0.7)', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                            The ride-or-dies, the childhood best friends, the brothers who&apos;ve been in our corner since
-                            before we could tie a tie. These are the people standing beside us — hype squad included.
+                            {lang === "es"
+                                ? "Amistades inseparables, mejores amigas desde la infancia y hermanos que han estado a nuestro lado desde siempre. Estas son las personas que nos acompañan, ¡con todo y su equipo de porristas!"
+                                : "The ride-or-dies, the childhood best friends, the brothers who&apos;ve been in our corner since before we could tie a tie. These are the people standing beside us — hype squad included."}
                         </p>
 
                         {/* Animated stat strip */}
@@ -548,7 +566,7 @@ export default function BridalPartyPage() {
                         <div key={dup} className="flex items-center">
                             {marqueeNames.map((n) => (
                                 <span key={`${dup}-${n}`} className="flex items-center" style={{ fontFamily: SERIF, fontSize: '1.1rem', color: SKY_DEEP, fontStyle: 'italic' }}>
-                                    <span className="px-5">{n}</span>
+                                    <span className="px-5" translate="no">{n}</span>
                                     <Heart size={11} style={{ color: SKY_DEEP, fill: SKY_DEEP }} />
                                 </span>
                             ))}
@@ -561,8 +579,8 @@ export default function BridalPartyPage() {
             <section className="py-24 px-6">
                 <div className="max-w-5xl mx-auto">
                     <SideSection
-                        title="Jhoana's Crew"
-                        tagline="The ones who've heard every version of this love story since day one."
+                        title={lang === "es" ? "El equipo de Jhoana" : "Jhoana's Crew"}
+                        tagline={lang === "es" ? "Quienes han escuchado cada versión de esta historia de amor desde el primer día." : "The ones who've heard every version of this love story since day one."}
                         featured={brideFeatured}
                         rest={brideRest}
                         startIndex={0}
@@ -572,8 +590,8 @@ export default function BridalPartyPage() {
                     <FaceOff />
 
                     <SideSection
-                        title="Damariel's Crew"
-                        tagline="Brothers by blood, brothers by choice — same energy either way."
+                        title={lang === "es" ? "El equipo de Damariel" : "Damariel's Crew"}
+                        tagline={lang === "es" ? "Hermanos de sangre y hermanos por elección: la misma energía de cualquier manera." : "Brothers by blood, brothers by choice — same energy either way."}
                         featured={groomFeatured}
                         rest={groomRest}
                         startIndex={brideFeatured.length + brideRest.length}
@@ -594,12 +612,13 @@ export default function BridalPartyPage() {
                             <Heart size={28} style={{ color: APRICOT, fill: APRICOT }} />
                         </motion.div>
                         <h2 style={{ fontFamily: SERIF, fontSize: '2.5rem', fontWeight: 300, color: IVORY, lineHeight: 1.1 }}>
-                            Thank you for being{' '}
-                            <span style={{ fontStyle: 'italic', color: APRICOT }}>part of this</span>
+                            {lang === "es" ? "Gracias por ser" : "Thank you for being"}{' '}
+                            <span style={{ fontStyle: 'italic', color: APRICOT }}>{lang === "es" ? "parte de esto" : "part of this"}</span>
                         </h2>
                         <p className="mt-4 mb-8" style={{ color: 'rgba(255,247,236,0.65)', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                            Whether you&apos;re standing with us at one celebration or both, you&apos;re the reason
-                            we get to say &ldquo;I do&rdquo; surrounded by the people we love most. Now let&apos;s make it official on paper.
+                            {lang === "es"
+                                ? "Ya sea que nos acompañes en una o en ambas celebraciones, gracias a ti podremos decir «sí, acepto» rodeados de las personas que más queremos. Ahora hagámoslo oficial."
+                                : "Whether you&apos;re standing with us at one celebration or both, you&apos;re the reason we get to say &ldquo;I do&rdquo; surrounded by the people we love most. Now let&apos;s make it official on paper."}
                         </p>
                         <Link
                             href="/rsvp"
@@ -611,7 +630,7 @@ export default function BridalPartyPage() {
                             className="inline-block px-8 py-3 rounded-full text-xs uppercase tracking-widest transition-transform hover:scale-105"
                             style={{ backgroundColor: APRICOT, color: SKY_DEEP, letterSpacing: '0.15em' }}
                         >
-                            Complete Your RSVP
+                            {lang === "es" ? "Completa tu confirmación" : "Complete Your RSVP"}
                         </Link>
                     </motion.div>
                 </div>

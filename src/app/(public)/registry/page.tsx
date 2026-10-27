@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { ExternalLink, Gift, Send, Home, Heart, Sparkles, Plane, Copy, Check, QrCode } from "lucide-react";
 import { motion } from "motion/react";
 import { SectionHeader } from "@/components/ui/SectionHeader";
+import { useLanguage, type Language } from "@/components/providers/LanguageProvider";
 
 // ─── Palette — Sky Blue + Apricot + Ivory + Sand ───────────────────────────
 const SKY_DEEP = "#123B54";
@@ -25,8 +26,7 @@ const REGISTRIES = [
     { id: "everyday", store: "Amazon", url: "https://www.amazon.com/wedding/guest-view/1MMDQ63OJ0LY", icon: Gift, color: SKY, featured: true },
 ] as const;
 
-const COPY = {
-    en: {
+const COPY_EN = {
         languageLabel: "Choose language",
         english: "English",
         spanish: "Español",
@@ -85,8 +85,9 @@ const COPY = {
                 body: "A handwritten note means more than any gift. There will be a card box at both venues.",
             },
         ],
-    },
-    es: {
+};
+
+const COPY_ES: typeof COPY_EN = {
         languageLabel: "Elige un idioma",
         english: "English",
         spanish: "Español",
@@ -145,10 +146,9 @@ const COPY = {
                 body: "Una nota escrita a mano significa más que cualquier regalo. Habrá una caja para tarjetas en ambos lugares.",
             },
         ],
-    },
-} as const;
+};
 
-type Language = keyof typeof COPY;
+const COPY = { en: COPY_EN, es: COPY_ES };
 
 function ZelleHoneymoonFund({ language }: { language: Language }) {
     const t = COPY[language];
@@ -251,25 +251,8 @@ function ZelleHoneymoonFund({ language }: { language: Language }) {
 }
 
 export default function RegistryPage() {
-    const [language, setLanguage] = useState<Language>("en");
+    const { lang: language } = useLanguage();
     const t = COPY[language];
-
-    useEffect(() => {
-        const preferredLanguages = navigator.languages.length
-            ? navigator.languages
-            : [navigator.language];
-        setLanguage(preferredLanguages.some((preferredLanguage) =>
-            preferredLanguage.toLowerCase().startsWith("es"),
-        ) ? "es" : "en");
-    }, []);
-
-    useEffect(() => {
-        const previousLanguage = document.documentElement.lang;
-        document.documentElement.lang = language;
-        return () => {
-            document.documentElement.lang = previousLanguage;
-        };
-    }, [language]);
 
     return (
         <div style={{ backgroundColor: IVORY }}>
@@ -280,24 +263,6 @@ export default function RegistryPage() {
                     style={{ backgroundImage: `radial-gradient(circle at 20% 40%, ${APRICOT} 0%, transparent 50%), radial-gradient(circle at 80% 60%, ${SKY} 0%, transparent 50%)` }}
                 />
                 <div className="relative z-10">
-                    <div className="flex justify-center mb-8" role="group" aria-label={t.languageLabel}>
-                        {(["en", "es"] as const).map((option) => (
-                            <button
-                                key={option}
-                                type="button"
-                                onClick={() => setLanguage(option)}
-                                aria-pressed={language === option}
-                                className="px-4 py-2 text-xs uppercase tracking-widest transition-colors first:rounded-l-full last:rounded-r-full focus-visible:outline-2 focus-visible:outline-offset-2"
-                                style={{
-                                    color: language === option ? SKY_DEEP : IVORY,
-                                    backgroundColor: language === option ? APRICOT : "rgba(255,247,236,0.12)",
-                                    outlineColor: SKY,
-                                }}
-                            >
-                                {option === "en" ? t.english : t.spanish}
-                            </button>
-                        ))}
-                    </div>
                     <motion.p
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -341,7 +306,7 @@ export default function RegistryPage() {
                 >
                     &ldquo;{t.quote}&rdquo;
                 </blockquote>
-                <p className="mt-4 text-sm" style={{ color: `${SKY_DEEP}66` }}>— Jhoana &amp; Damariel</p>
+                <p className="mt-4 text-sm" style={{ color: `${SKY_DEEP}66` }} translate="no">— Jhoana &amp; Damariel</p>
             </section>
 
             {/* Honeymoon Fund — Zelle */}

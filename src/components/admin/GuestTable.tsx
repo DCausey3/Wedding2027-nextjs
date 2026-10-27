@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { X, Plus, Loader2, Trash2 } from "lucide-react";
 import type { Guest, GuestType } from "@/types";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const GUEST_TYPES: GuestType[] = [
   "COLOMBIA_ONLY",
@@ -38,6 +39,60 @@ const BLANK_GUEST: EditableGuest = {
 
 export function GuestTable({ guests }: { guests: Guest[] }) {
   const router = useRouter();
+  const { lang } = useLanguage();
+  const t = lang === "es"
+    ? {
+        search: "Buscar invitados…",
+        addGuest: "Agregar invitado",
+        headers: ["Nombre", "Correo", "Tipo", "Código", "Confirmación", "Acompañantes", ""],
+        noResults: "No hay resultados para tu búsqueda.",
+        noGuests: "Aún no hay invitados.",
+        editGuest: "Editar invitado",
+        firstName: "Nombre",
+        lastName: "Apellido",
+        email: "Correo electrónico",
+        phone: "Teléfono (para WhatsApp más adelante)",
+        inviteType: "Tipo de invitación",
+        side: "Lado",
+        bride: "Novia",
+        groom: "Novio",
+        both: "Ambos",
+        plusOneAllowed: "Se permite acompañante",
+        notes: "Notas",
+        cancel: "Cancelar",
+        save: "Guardar",
+        deleteGuest: "Eliminar",
+        resultsOf: "de",
+        guests: "invitados",
+        removeConfirm: "¿Eliminar a este invitado? Esta acción no se puede deshacer.",
+        statuses: { ACCEPTED: "CONFIRMADA", DECLINED: "RECHAZADA", PENDING: "PENDIENTE" },
+      }
+    : {
+        search: "Search guests…",
+        addGuest: "Add Guest",
+        headers: ["Name", "Email", "Type", "Code", "RSVP", "Plus Ones", ""],
+        noResults: "No results for your search.",
+        noGuests: "No guests yet.",
+        editGuest: "Edit Guest",
+        firstName: "First Name",
+        lastName: "Last Name",
+        email: "Email",
+        phone: "Phone (for WhatsApp later)",
+        inviteType: "Invite Type",
+        side: "Side",
+        bride: "Bride",
+        groom: "Groom",
+        both: "Both",
+        plusOneAllowed: "Plus one allowed",
+        notes: "Notes",
+        cancel: "Cancel",
+        save: "Save",
+        deleteGuest: "Delete",
+        resultsOf: "of",
+        guests: "guests",
+        removeConfirm: "Remove this guest? This cannot be undone.",
+        statuses: { ACCEPTED: "ACCEPTED", DECLINED: "DECLINED", PENDING: "PENDING" },
+      };
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<EditableGuest | null>(null);
   const [saving, setSaving] = useState(false);
@@ -106,7 +161,7 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Remove this guest? This cannot be undone.")) return;
+    if (!confirm(t.removeConfirm)) return;
     setDeletingId(id);
     try {
       const res = await fetch(`/api/admin/guests/${id}`, { method: "DELETE" });
@@ -124,14 +179,14 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
         <input
           type="search"
-          placeholder="Search guests…"
+          placeholder={t.search}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 min-w-[200px] max-w-sm px-4 py-2 rounded-xl text-sm border border-champagne bg-white text-dark placeholder:text-dark/30 focus:border-sand focus:outline-none"
         />
         <button onClick={openAdd} className="btn-gold flex items-center gap-2">
           <Plus size={14} />
-          Add Guest
+          {t.addGuest}
         </button>
       </div>
 
@@ -139,7 +194,7 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-champagne">
-              {["Name", "Email", "Type", "Code", "RSVP", "Plus Ones", ""].map((h) => (
+              {t.headers.map((h) => (
                 <th
                   key={h}
                   className="text-left py-2 pr-4 label-overline text-dark/30 font-normal whitespace-nowrap"
@@ -159,7 +214,7 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
                   className="border-b border-champagne/50 hover:bg-champagne/20 transition-colors cursor-pointer"
                   onClick={() => openEdit(g)}
                 >
-                  <td className="py-3 pr-4 font-medium text-dark whitespace-nowrap">
+                  <td className="py-3 pr-4 font-medium text-dark whitespace-nowrap" translate="no">
                     {g.firstName} {g.lastName}
                   </td>
                   <td className="py-3 pr-4 text-dark/50 text-xs">{g.email ?? "—"}</td>
@@ -174,7 +229,7 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
                       className="inline-block px-2 py-0.5 rounded-full text-white text-xs"
                       style={{ backgroundColor: statusColor[status] }}
                     >
-                      {status}
+                      {t.statuses[status as keyof typeof t.statuses] ?? status}
                     </span>
                   </td>
                   <td className="py-3 text-dark/50">{plusOnes}</td>
@@ -186,7 +241,7 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
                       }}
                       disabled={deletingId === g.id}
                       className="text-dark/30 hover:text-red-500 transition-colors p-1"
-                      aria-label={`Delete ${g.firstName} ${g.lastName}`}
+                      aria-label={`${t.deleteGuest} ${g.firstName} ${g.lastName}`}
                     >
                       {deletingId === g.id ? (
                         <Loader2 size={14} className="animate-spin" />
@@ -202,12 +257,12 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
         </table>
         {filtered.length === 0 && (
           <p className="text-center text-sm text-dark/40 py-8">
-            {search ? "No results for your search." : "No guests yet."}
+            {search ? t.noResults : t.noGuests}
           </p>
         )}
       </div>
       <p className="text-xs text-dark/30 mt-3">
-        {filtered.length} of {guests.length} guests
+        {filtered.length} {t.resultsOf} {guests.length} {t.guests}
       </p>
 
       {editing && (
@@ -221,7 +276,7 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-serif text-xl font-light text-dark">
-                {editing.id ? "Edit Guest" : "Add Guest"}
+                {editing.id ? t.editGuest : t.addGuest}
               </h3>
               <button onClick={() => setEditing(null)} className="text-dark/40 hover:text-dark">
                 <X size={18} />
@@ -231,7 +286,7 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label-overline text-dark/50 block mb-1.5">First Name</label>
+                  <label className="label-overline text-dark/50 block mb-1.5">{t.firstName}</label>
                   <input
                     value={editing.firstName}
                     onChange={(e) => setEditing({ ...editing, firstName: e.target.value })}
@@ -239,7 +294,7 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
                   />
                 </div>
                 <div>
-                  <label className="label-overline text-dark/50 block mb-1.5">Last Name</label>
+                  <label className="label-overline text-dark/50 block mb-1.5">{t.lastName}</label>
                   <input
                     value={editing.lastName}
                     onChange={(e) => setEditing({ ...editing, lastName: e.target.value })}
@@ -249,7 +304,7 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
               </div>
 
               <div>
-                <label className="label-overline text-dark/50 block mb-1.5">Email</label>
+                <label className="label-overline text-dark/50 block mb-1.5">{t.email}</label>
                 <input
                   type="email"
                   value={editing.email}
@@ -260,7 +315,7 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
 
               <div>
                 <label className="label-overline text-dark/50 block mb-1.5">
-                  Phone (for WhatsApp later)
+                  {t.phone}
                 </label>
                 <input
                   type="tel"
@@ -272,7 +327,7 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
               </div>
 
               <div>
-                <label className="label-overline text-dark/50 block mb-1.5">Invite Type</label>
+                <label className="label-overline text-dark/50 block mb-1.5">{t.inviteType}</label>
                 <select
                   value={editing.guestType}
                   onChange={(e) =>
@@ -289,16 +344,16 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
               </div>
 
               <div>
-                <label className="label-overline text-dark/50 block mb-1.5">Side</label>
+                <label className="label-overline text-dark/50 block mb-1.5">{t.side}</label>
                 <select
                   value={editing.side}
                   onChange={(e) => setEditing({ ...editing, side: e.target.value as any })}
                   className="w-full px-3 py-2 rounded-lg text-sm border border-champagne focus:border-sand focus:outline-none"
                 >
                   <option value="">—</option>
-                  <option value="BRIDE">Bride</option>
-                  <option value="GROOM">Groom</option>
-                  <option value="BOTH">Both</option>
+                  <option value="BRIDE">{t.bride}</option>
+                  <option value="GROOM">{t.groom}</option>
+                  <option value="BOTH">{t.both}</option>
                 </select>
               </div>
 
@@ -311,11 +366,11 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
                   }
                   className="accent-sand"
                 />
-                <span className="text-sm text-dark">Plus one allowed</span>
+                <span className="text-sm text-dark">{t.plusOneAllowed}</span>
               </label>
 
               <div>
-                <label className="label-overline text-dark/50 block mb-1.5">Notes</label>
+                <label className="label-overline text-dark/50 block mb-1.5">{t.notes}</label>
                 <textarea
                   rows={3}
                   value={editing.notes}
@@ -331,14 +386,14 @@ export function GuestTable({ guests }: { guests: Guest[] }) {
                 disabled={saving}
                 className="flex-1 py-2.5 rounded-full text-sm border border-champagne text-dark/60 hover:bg-champagne/30 transition-colors"
               >
-                Cancel
+                {t.cancel}
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || !editing.firstName || !editing.lastName}
                 className="flex-1 btn-gold disabled:opacity-40"
               >
-                {saving ? <Loader2 size={14} className="animate-spin mx-auto" /> : "Save"}
+                {saving ? <Loader2 size={14} className="animate-spin mx-auto" /> : t.save}
               </button>
             </div>
           </div>

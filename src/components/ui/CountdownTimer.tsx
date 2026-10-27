@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getTimeLeft } from "@/lib/utils";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface CountdownTimerProps {
     targetDate: string | Date;
@@ -20,6 +21,7 @@ export function CountdownTimer({
                                    size = "md",
                                    showSeconds = true,
                                }: CountdownTimerProps) {
+    const { lang } = useLanguage();
     const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
     const [mounted, setMounted] = useState(false);
 
@@ -41,10 +43,10 @@ export function CountdownTimer({
     }
 
     const allUnits = [
-        { label: "Days", value: timeLeft.days },
-        { label: "Hrs", value: timeLeft.hours },
+        { label: lang === "es" ? "Días" : "Days", value: timeLeft.days },
+        { label: lang === "es" ? "H" : "Hrs", value: timeLeft.hours },
         { label: "Min", value: timeLeft.minutes },
-        { label: "Sec", value: timeLeft.seconds },
+        { label: lang === "es" ? "Seg" : "Sec", value: timeLeft.seconds },
     ];
 
     // When showSeconds is false (e.g. cramped mobile layouts), drop the

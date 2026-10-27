@@ -2,8 +2,31 @@
 
 import { useState } from "react";
 import { Loader2, CheckCircle } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export function ContactForm() {
+  const { lang } = useLanguage();
+  const t = lang === "es"
+    ? {
+        sent: "¡Mensaje enviado!",
+        response: "Te responderemos en un plazo de 48 horas.",
+        name: "Nombre",
+        fullName: "Nombre completo",
+        email: "Correo electrónico",
+        message: "Mensaje",
+        messagePlaceholder: "¿En qué podemos ayudarte?",
+        send: "Enviar mensaje",
+      }
+    : {
+        sent: "Message Sent!",
+        response: "We&apos;ll get back to you within 48 hours.",
+        name: "Name",
+        fullName: "Your full name",
+        email: "Email",
+        message: "Message",
+        messagePlaceholder: "What's on your mind?",
+        send: "Send Message",
+      };
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -23,9 +46,9 @@ export function ContactForm() {
     return (
       <div className="card-wedding flex flex-col items-center text-center gap-4 py-12">
         <CheckCircle size={32} className="text-sand" />
-        <h3 className="font-serif text-xl font-light text-dark">Message Sent!</h3>
+        <h3 className="font-serif text-xl font-light text-dark">{t.sent}</h3>
         <p className="text-sm text-dark/60">
-          We&apos;ll get back to you within 48 hours.
+          {t.response}
         </p>
       </div>
     );
@@ -35,7 +58,7 @@ export function ContactForm() {
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
       <div>
         <label htmlFor="contact-name" className="label-overline text-dark/50 block mb-2">
-          Name
+          {t.name}
         </label>
         <input
           id="contact-name"
@@ -43,13 +66,13 @@ export function ContactForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          placeholder="Your full name"
+          placeholder={t.fullName}
           className="w-full px-4 py-3 rounded-xl text-sm border border-champagne bg-white text-dark placeholder:text-dark/30 focus:border-sand focus:outline-none"
         />
       </div>
       <div>
         <label htmlFor="contact-email" className="label-overline text-dark/50 block mb-2">
-          Email
+          {t.email}
         </label>
         <input
           id="contact-email"
@@ -63,7 +86,7 @@ export function ContactForm() {
       </div>
       <div>
         <label htmlFor="contact-message" className="label-overline text-dark/50 block mb-2">
-          Message
+          {t.message}
         </label>
         <textarea
           id="contact-message"
@@ -71,7 +94,7 @@ export function ContactForm() {
           onChange={(e) => setMessage(e.target.value)}
           required
           rows={5}
-          placeholder="What's on your mind?"
+          placeholder={t.messagePlaceholder}
           className="w-full px-4 py-3 rounded-xl text-sm border border-champagne bg-white text-dark placeholder:text-dark/30 focus:border-sand focus:outline-none resize-none"
         />
       </div>
@@ -80,7 +103,7 @@ export function ContactForm() {
         disabled={loading || !name || !email || !message}
         className="w-full btn-gold disabled:opacity-40"
       >
-        {loading ? <Loader2 size={14} className="animate-spin" /> : "Send Message"}
+        {loading ? <Loader2 size={14} className="animate-spin" /> : t.send}
       </button>
     </form>
   );

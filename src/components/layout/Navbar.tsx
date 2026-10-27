@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, Heart } from "lucide-react";
 import { useAuth } from "../../app/context/AuthContext";
+import { useLanguage } from "../providers/LanguageProvider";
 
 // Supabase can hand these back as real booleans or "true"/"false" strings
 // depending on the column — normalize defensively, same as the homepage.
@@ -16,22 +17,13 @@ function isTruthy(value: unknown): boolean {
 
 type NavLink = { href: string; label: string };
 
-const BASE_LINKS: NavLink[] = [
-    { href: "/home", label: "Home" },
-    { href: "/our-story", label: "Our Story" },
-    { href: "/bridalParty", label: "Meet Bridal Party" },
-    { href: "/rsvp", label: "RSVP" },
-    { href: "/registry", label: "Registry" },
-    { href: "/faq", label: "FAQ" },
-    { href: "/contact", label: "Contact" },
-];
-
 export function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [open, setOpen] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
     const { guest, loaded } = useAuth();
+    const { lang, setLang } = useLanguage();
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 40);
@@ -48,11 +40,36 @@ export function Navbar() {
     // Insert Colombia/Texas right after "Our Story" — only for weddings this
     // guest actually RSVP'd to attend. Shows both, one, or neither.
     const navLinks: NavLink[] = [
-        ...BASE_LINKS.slice(0, 2), // Home, Our Story
+        { href: "/home", label: lang === "es" ? "Inicio" : "Home" },
+        { href: "/our-story", label: lang === "es" ? "Nuestra historia" : "Our Story" },
         ...(attendingColombia ? [{ href: "/colombia", label: "Colombia" }] : []),
         ...(attendingFlorida ? [{ href: "/florida", label: "Florida" }] : []),
-        ...BASE_LINKS.slice(2), // Events, Travel, RSVP, Registry, FAQ, Contact
+        { href: "/bridalParty", label: lang === "es" ? "Cortejo" : "Wedding Party" },
+        { href: "/rsvp", label: "RSVP" },
+        { href: "/registry", label: lang === "es" ? "Regalos" : "Registry" },
+        { href: "/faq", label: "FAQ" },
+        { href: "/contact", label: lang === "es" ? "Contacto" : "Contact" },
     ];
+
+    const languageToggle = (
+        <div className="flex items-center gap-1" role="group" aria-label={lang === "es" ? "Idioma" : "Language"}>
+            {(["en", "es"] as const).map((option) => (
+                <button
+                    key={option}
+                    type="button"
+                    onClick={() => setLang(option)}
+                    aria-pressed={lang === option}
+                    className={`px-2 py-1 text-[0.65rem] font-semibold tracking-wider rounded transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                        lang === option
+                            ? scrolled || !isHome ? "bg-sand text-dark" : "bg-white/20 text-white"
+                            : scrolled || !isHome ? "text-dark/60 hover:text-dark" : "text-white/70 hover:text-white"
+                    }`}
+                >
+                    {option.toUpperCase()}
+                </button>
+            ))}
+        </div>
+    );
 
     const handleLockedClick = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -70,7 +87,7 @@ export function Navbar() {
         >
             <nav
                 className="container-wedding mx-auto flex items-center justify-between px-6 h-16"
-                aria-label="Main navigation"
+                aria-label={lang === "es" ? "Navegación principal" : "Main navigation"}
             >
                 {/* Logo — always goes to /home */}
                 <Link
@@ -95,14 +112,14 @@ export function Navbar() {
                 </Link>
 
                 {/* Desktop links */}
-                <ul className="hidden md:flex items-center gap-8 list-none">
+                <ul className="hidden lg:flex items-center gap-4 list-none">
                     {navLinks.map((link) => (
                         <li key={link.href}>
                             <Link
                                 href={locked ? "/" : link.href}
                                 onClick={locked ? handleLockedClick : undefined}
                                 aria-disabled={locked}
-                                title={locked ? "Log in to access this page" : undefined}
+                                title={locked ? lang === "es" ? "Inicia sesión para acceder a esta página" : "Log in to access this page" : undefined}
                                 className={`label-overline transition-colors hover:text-sand ${
                                     scrolled || !isHome ? "text-dark/70" : "text-ivory/80"
                                 } ${pathname === link.href ? "text-sand!" : ""} ${
@@ -115,20 +132,25 @@ export function Navbar() {
                     ))}
                 </ul>
 
+                <div className="hidden lg:block">{languageToggle}</div>
+
                 {/* Mobile hamburger */}
+                <div className="flex items-center gap-2 lg:hidden">
+                    {languageToggle}
                 <button
-                    className={`md:hidden p-2 ${scrolled || !isHome ? "text-dark" : "text-ivory"}`}
+                    className={`p-2 ${scrolled || !isHome ? "text-dark" : "text-ivory"}`}
                     onClick={() => setOpen(!open)}
-                    aria-label={open ? "Close menu" : "Open menu"}
+                    aria-label={open ? lang === "es" ? "Cerrar menú" : "Close menu" : lang === "es" ? "Abrir menú" : "Open menu"}
                     aria-expanded={open}
                 >
                     {open ? <X size={20} /> : <Menu size={20} />}
                 </button>
+                </div>
             </nav>
 
             {/* Mobile drawer */}
             {open && (
-                <div className="md:hidden bg-white border-t border-champagne px-6 py-6">
+                <div className="lg:hidden bg-white border-t border-champagne px-6 py-6">
                     <ul className="flex flex-col gap-5 list-none">
                         {navLinks.map((link) => (
                             <li key={link.href}>

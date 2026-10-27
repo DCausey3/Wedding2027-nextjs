@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 type Slide = { src: string; alt: string };
 
@@ -26,6 +27,7 @@ export function PhotoCarousel({
 }) {
   const [[index, dir], setPage] = useState<[number, number]>([0, 0]);
   const [paused, setPaused] = useState(false);
+  const { lang } = useLanguage();
 
   const paginate = useCallback(
     (d: number) =>
@@ -48,7 +50,7 @@ export function PhotoCarousel({
       tabIndex={0}
       role="region"
       aria-roledescription="carousel"
-      aria-label="Save the date photos"
+      aria-label={lang === "es" ? "Fotos para reservar la fecha" : "Save the date photos"}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
@@ -107,7 +109,7 @@ export function PhotoCarousel({
           <>
             <button
               onClick={() => paginate(-1)}
-              aria-label="Previous photo"
+              aria-label={lang === "es" ? "Foto anterior" : "Previous photo"}
               className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition hover:opacity-80"
               style={{ backgroundColor: "rgba(18,59,84,0.55)", color: IVORY }}
             >
@@ -115,7 +117,7 @@ export function PhotoCarousel({
             </button>
             <button
               onClick={() => paginate(1)}
-              aria-label="Next photo"
+              aria-label={lang === "es" ? "Foto siguiente" : "Next photo"}
               className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition hover:opacity-80"
               style={{ backgroundColor: "rgba(18,59,84,0.55)", color: IVORY }}
             >
@@ -132,7 +134,7 @@ export function PhotoCarousel({
             <button
               key={s.src}
               onClick={() => setPage([i, i > index ? 1 : -1])}
-              aria-label={`Go to photo ${i + 1}`}
+              aria-label={lang === "es" ? `Ir a la foto ${i + 1}` : `Go to photo ${i + 1}`}
               aria-current={i === index}
               className="h-2 rounded-full transition-all duration-300"
               style={{

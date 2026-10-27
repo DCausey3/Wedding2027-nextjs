@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Lock, Mail, Phone, Key, ChevronRight, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Image from "next/image";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 type LoginMethod = 'code' | 'email' | 'phone';
 
@@ -34,6 +35,42 @@ function LoginForm() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { setGuest } = useAuth();
+    const { lang } = useLanguage();
+    const t = lang === "es"
+        ? {
+            invalidEmail: "Ingresa una dirección de correo electrónico válida.",
+            invalidPhone: "Ingresa un número de teléfono válido.",
+            unexpectedError: "Ocurrió un error de red inesperado.",
+            welcome: "Te damos la bienvenida",
+            personal: "Tu portal",
+            portal: "personal de boda",
+            accessDetails: "Accede a tu invitación personalizada, confirma tu asistencia y consulta los detalles del viaje.",
+            login: "Acceso de invitados",
+            instructions: "¿Es tu primera vez? Usa el código de tu invitación. Si ya has ingresado antes, puedes usar tu correo electrónico, número de teléfono o código de invitación.",
+            inviteCode: "Código de invitación",
+            email: "Correo",
+            phone: "Teléfono",
+            enterCode: "Ingresa tu código de invitación (p. ej., JDWED2026)",
+            accessPortal: "Acceder a mi portal",
+            secure: "Tu información es privada y segura.",
+        }
+        : {
+            invalidEmail: "Please enter a valid email address.",
+            invalidPhone: "Please enter a valid phone number.",
+            unexpectedError: "An unexpected network error occurred.",
+            welcome: "Welcome",
+            personal: "Your personal",
+            portal: "wedding portal",
+            accessDetails: "Access your personalized invitation, RSVP, and travel details.",
+            login: "Guest Login",
+            instructions: "First time here? Use your invitation code. Returning guests may sign in with their email, phone number or Invitation Code.",
+            inviteCode: "Invite Code",
+            email: "Email",
+            phone: "Phone",
+            enterCode: "Enter your invite code (e.g. JDWED2026)",
+            accessPortal: "Access My Portal",
+            secure: "Your information is private and secure.",
+        };
     const router = useRouter();
     const searchParams = useSearchParams();
     const prefilled = useRef(false);
@@ -50,12 +87,12 @@ function LoginForm() {
                 url = `/api/rsvp/lookup?code=${encodeURIComponent(normalizedValue.toUpperCase())}`;
             } else if (method === 'email') {
                 if (normalizedValue.length <= 3 || !normalizedValue.includes('@')) {
-                    throw new Error('Please enter a valid email address.');
+                    throw new Error(t.invalidEmail);
                 }
                 url = `/api/rsvp/lookup?email=${encodeURIComponent(normalizedValue.toLowerCase())}`;
             } else if (method === 'phone') {
                 if (normalizedValue.length < 7) {
-                    throw new Error('Please enter a valid phone number.');
+                    throw new Error(t.invalidPhone);
                 }
                 url = `/api/rsvp/lookup?phone=${encodeURIComponent(normalizedValue)}`;
             }
@@ -102,7 +139,7 @@ function LoginForm() {
             if (err instanceof Error) {
                 setError(err.message);
             } else {
-                setError('An unexpected network error occurred.');
+                setError(t.unexpectedError);
             }
         } finally {
             setLoading(false);
@@ -149,7 +186,7 @@ function LoginForm() {
                             textShadow: '0 2px 12px rgba(0,0,0,0.5)',
                         }}
                     >
-                        Welcome
+                        {t.welcome}
                     </p>
                     <h2
                         style={{
@@ -161,17 +198,17 @@ function LoginForm() {
                             textShadow: '0 2px 12px rgba(0,0,0,0.5)',
                         }}
                     >
-                        Your personal
+                        {t.personal}
                         <br />
                         <span style={{ fontStyle: 'italic', color: COLORS.skyBlue, textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>
-                            wedding portal
+                            {t.portal}
                         </span>
                     </h2>
                     <p
                         className="mt-4"
                         style={{ color: 'rgba(255,247,236,0.75)', fontSize: '0.9rem', textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}
                     >
-                        Access your personalized invitation, RSVP, and travel details.
+                        {t.accessDetails}
                     </p>
                 </div>
             </div>
@@ -200,16 +237,19 @@ function LoginForm() {
                             lineHeight: 1.1,
                         }}
                     >
-                        Guest Login
+                        {t.login}
                     </h1>
                     <p style={{ color: COLORS.muted, fontSize: '0.9rem', marginTop: '0.5rem', marginBottom: '2rem' }}>
-                        First time here? Use your invitation code.
-                        Returning guests may sign in with their email, phone number or Invitation Code.
+                        {t.instructions}
                     </p>
 
                     {/* Method selector */}
                     <div className="flex rounded-full p-1 mb-8" style={{ backgroundColor: COLORS.sand }}>
-                        {([['code', 'Invite Code'], ['email', 'Email'], ['phone', 'Phone']] as [LoginMethod, string][]).map(([m, label]) => (
+                        {([
+                            ['code', t.inviteCode],
+                            ['email', t.email],
+                            ['phone', t.phone],
+                        ] as [LoginMethod, string][]).map(([m, label]) => (
                             <button
                                 key={m}
                                 onClick={() => { setMethod(m); setValue(''); setError(''); }}
@@ -247,7 +287,7 @@ function LoginForm() {
                                     onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                                     placeholder={
                                         method === 'code'
-                                            ? 'Enter your invite code (e.g. JDWED2026)'
+                                            ? t.enterCode
                                             : method === 'email'
                                                 ? 'your@email.com'
                                                 : '+1 (555) 000-0000'
@@ -287,7 +327,7 @@ function LoginForm() {
                                     <Loader2 size={16} className="animate-spin" />
                                 ) : (
                                     <>
-                                        Access My Portal
+                                        {t.accessPortal}
                                         <ChevronRight size={16} />
                                     </>
                                 )}
@@ -298,7 +338,7 @@ function LoginForm() {
                     <div className="mt-6 flex items-center gap-2">
                         <Lock size={12} style={{ color: COLORS.muted }} />
                         <p className="text-xs" style={{ color: COLORS.muted }}>
-                            Your information is private and secure.
+                            {t.secure}
                         </p>
                     </div>
                 </motion.div>

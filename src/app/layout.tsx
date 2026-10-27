@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { SupabaseProvider } from "../components/providers/SupabaseProvider";
+import { LanguageProvider } from "../components/providers/LanguageProvider";
 // 1. Import your AuthProvider (adjust the path if it lives somewhere else)
 import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "sonner";
@@ -27,20 +28,19 @@ export default function RootLayout({
         <html lang="en">
         <body>
         <SupabaseProvider>
-            {/* 2. Nest AuthProvider inside SupabaseProvider so auth code can access Supabase if needed */}
-            <AuthProvider>
-                {children}
-            </AuthProvider>
-
-            <Toaster
-                position="top-center"
-                toastOptions={{
-                    style: {
-                        fontFamily: "var(--font-inter)",
-                        borderRadius: "12px",
-                    },
-                }}
-            />
+            <LanguageProvider>
+                {/* AuthProvider stays inside SupabaseProvider so auth code can access Supabase. */}
+                <AuthProvider>{children}</AuthProvider>
+                <Toaster
+                    position="top-center"
+                    toastOptions={{
+                        style: {
+                            fontFamily: "var(--font-inter)",
+                            borderRadius: "12px",
+                        },
+                    }}
+                />
+            </LanguageProvider>
         </SupabaseProvider>
         </body>
         </html>

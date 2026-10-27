@@ -8,6 +8,8 @@ import {
     Shield, Clock, Gift, Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
+import { useLanguage, type Language } from "@/components/providers/LanguageProvider";
+import { formatLocalizedDate } from "@/lib/utils";
 
 // Requires: npm i canvas-confetti && npm i -D @types/canvas-confetti
 
@@ -41,7 +43,6 @@ interface WeddingInfo {
     key: "colombia" | "florida";
     label: string;
     icon: string;
-    dateLabel: string;
     date: Date;          // local date, used for the countdown
     icsDate: string;     // YYYYMMDD, used for the calendar file
     icsEndDate: string;  // day after, all-day events end exclusively
@@ -54,7 +55,6 @@ const WEDDINGS: Record<"colombia" | "florida", WeddingInfo> = {
         key: "colombia",
         label: "Colombia Wedding",
         icon: "COL",
-        dateLabel: "June 12, 2027",
         date: new Date(2027, 5, 12),
         icsDate: "20270612",
         icsEndDate: "20270613",
@@ -65,7 +65,6 @@ const WEDDINGS: Record<"colombia" | "florida", WeddingInfo> = {
         key: "florida",
         label: "Gainesville Wedding",
         icon: "GNV",
-        dateLabel: "April 24, 2027",
         date: new Date(2027, 3, 24),
         icsDate: "20270424",
         icsEndDate: "20270425",
@@ -124,7 +123,7 @@ function daysUntil(date: Date) {
     return Math.max(0, Math.round((date.getTime() - today.getTime()) / 86400000));
 }
 
-function calendarHref(w: WeddingInfo) {
+function calendarHref(w: WeddingInfo, language: Language) {
     const ics = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
@@ -134,7 +133,7 @@ function calendarHref(w: WeddingInfo) {
         `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
         `DTSTART;VALUE=DATE:${w.icsDate}`,
         `DTEND;VALUE=DATE:${w.icsEndDate}`,
-        `SUMMARY:Jhoana & Damariel's Wedding (${w.label})`,
+        `SUMMARY:${language === "es" ? "Boda de Jhoana y Damariel" : "Jhoana & Damariel's Wedding"} (${w.label})`,
         `LOCATION:${w.location}`,
         "END:VEVENT",
         "END:VCALENDAR",
@@ -262,6 +261,7 @@ function CheckBadge({ muted }: { muted: boolean }) {
 
 // ─── Wedding ticket card with countdown ─────────────────────────────────────
 function WeddingTicket({ wedding, index }: { wedding: WeddingInfo; index: number }) {
+    const { lang } = useLanguage();
     const days = daysUntil(wedding.date);
     const { accent } = wedding;
 
@@ -288,7 +288,7 @@ function WeddingTicket({ wedding, index }: { wedding: WeddingInfo; index: number
                         <CountUp to={days} />
                     </span>
                     <span className="uppercase mt-1" style={{ fontSize: "0.5rem", letterSpacing: "0.18em", color: SKY_DEEP, opacity: 0.8 }}>
-                        days to go
+                        {lang === "es" ? "días restantes" : "days to go"}
                     </span>
                     {/* ticket notches */}
                     <span className="absolute -right-2 -top-2 w-4 h-4 rounded-full" style={{ backgroundColor: IVORY }} />
@@ -307,21 +307,23 @@ function WeddingTicket({ wedding, index }: { wedding: WeddingInfo; index: number
                         >
                             {wedding.icon}
                         </span>
-                        <p className="text-xs font-medium" style={{ color: SKY_DEEP, fontFamily: SANS }}>{wedding.label}</p>
+                        <p className="text-xs font-medium" style={{ color: SKY_DEEP, fontFamily: SANS }}>
+                            {lang === "es" ? wedding.key === "colombia" ? "Boda en Colombia" : "Boda en Gainesville" : wedding.label}
+                        </p>
                     </div>
                     <p className="mt-2" style={{ fontFamily: SERIF, fontSize: "1.35rem", color: SKY_DEEP, lineHeight: 1.1 }}>
-                        {wedding.dateLabel}
+                        {formatLocalizedDate(wedding.date, lang)}
                     </p>
                     <p className="flex items-center gap-1 mt-1 text-xs" style={{ color: `${SKY_DEEP}99`, fontFamily: SANS }}>
                         <MapPin size={11} style={{ color: accent }} /> {wedding.location}
                     </p>
                     <a
-                        href={calendarHref(wedding)}
+                        href={calendarHref(wedding, lang)}
                         download={`${wedding.key}-wedding.ics`}
                         className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full text-[0.6rem] uppercase transition-opacity hover:opacity-80"
                         style={{ backgroundColor: `${accent}22`, color: SKY_DEEP, letterSpacing: "0.12em", border: `1px solid ${accent}66`, fontFamily: SANS }}
                     >
-                        <CalendarPlus size={11} /> Add to calendar
+                        <CalendarPlus size={11} /> {lang === "es" ? "Agregar al calendario" : "Add to calendar"}
                     </a>
                 </div>
             </div>
@@ -331,6 +333,7 @@ function WeddingTicket({ wedding, index }: { wedding: WeddingInfo; index: number
 
 // ─── Page ───────────────────────────────────────────────────────────────────
 export default function MyDetailsPage() {
+    const { lang } = useLanguage();
     const { guest, loaded } = useStoredGuest();
     const reduce = useReducedMotion();
 
@@ -341,17 +344,17 @@ export default function MyDetailsPage() {
             <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: IVORY }}>
                 <div className="text-center max-w-sm">
                     <p style={{ fontFamily: SERIF, fontSize: "1.6rem", color: SKY_DEEP }}>
-                        We couldn&apos;t find your details.
+                        {lang === "es" ? "No encontramos tus datos." : "We couldn&apos;t find your details."}
                     </p>
                     <p className="mt-2 text-sm" style={{ color: `${SKY_DEEP}99` }}>
-                        Please log in again to view your save-the-date confirmation.
+                        {lang === "es" ? "Inicia sesión de nuevo para ver la confirmación de tu fecha." : "Please log in again to view your save-the-date confirmation."}
                     </p>
                     <Link
                         href="/login"
                         className="inline-block mt-6 px-8 py-3 rounded-full text-xs uppercase tracking-widest transition-all hover:opacity-90"
                         style={{ backgroundColor: SKY_DEEP, color: IVORY, letterSpacing: "0.15em" }}
                     >
-                        Back to Login
+                        {lang === "es" ? "Volver al inicio de sesión" : "Back to Login"}
                     </Link>
                 </div>
             </div>
@@ -368,12 +371,12 @@ export default function MyDetailsPage() {
     const contactAddress = guest.email || guest.phone || null;
 
     const weddingLabel = attendingBoth
-        ? "Both Weddings"
+        ? lang === "es" ? "Ambas bodas" : "Both Weddings"
         : attendingColombia
-            ? "Colombia Wedding"
+            ? lang === "es" ? "Boda en Colombia" : "Colombia Wedding"
             : attendingFlorida
-                ? "Gainesville Wedding"
-                : "Not Attending";
+                ? lang === "es" ? "Boda en Gainesville" : "Gainesville Wedding"
+                : lang === "es" ? "No asistirá" : "Not Attending";
 
     const attendingWeddings: WeddingInfo[] = [
         ...(attendingFlorida ? [WEDDINGS.florida] : []),
@@ -381,9 +384,9 @@ export default function MyDetailsPage() {
     ].sort((a, b) => a.date.getTime() - b.date.getTime());
 
     const summaryRows = [
-        { label: "Guest", value: `${guest.firstName ?? ""} ${guest.lastName ?? ""}`.trim() || "—" },
-        { label: "Party", value: `${partySize} ${partySize === 1 ? "guest" : "guests"}` },
-        { label: "Attending", value: weddingLabel },
+        { label: lang === "es" ? "Invitado" : "Guest", value: `${guest.firstName ?? ""} ${guest.lastName ?? ""}`.trim() || "—" },
+        { label: lang === "es" ? "Grupo" : "Party", value: `${partySize} ${partySize === 1 ? lang === "es" ? "persona" : "guest" : lang === "es" ? "personas" : "guests"}` },
+        { label: lang === "es" ? "Asistencia" : "Attending", value: weddingLabel },
     ];
 
     return (
@@ -416,7 +419,7 @@ export default function MyDetailsPage() {
                             className="ml-auto text-xs px-2.5 py-1 rounded-full"
                             style={{ backgroundColor: `${APRICOT}33`, color: SKY_DEEP, fontFamily: SANS }}
                         >
-                            {guest.firstName}
+                            <span translate="no">{guest.firstName}</span>
                         </span>
                     </div>
                 </motion.div>
@@ -431,7 +434,7 @@ export default function MyDetailsPage() {
 
                     <p className="text-[0.6rem] uppercase tracking-[0.28em] mb-3 flex items-center justify-center gap-2" style={{ color: "#c97f3f" }}>
                         <Sparkles size={11} />
-                        {attendingNeither ? "Response Received" : "Save the Date Confirmed"}
+                        {attendingNeither ? lang === "es" ? "Respuesta recibida" : "Response Received" : lang === "es" ? "Fecha confirmada" : "Save the Date Confirmed"}
                         <Sparkles size={11} />
                     </p>
 
@@ -445,16 +448,20 @@ export default function MyDetailsPage() {
                         }}
                     >
                         {attendingNeither ? (
-                            <>We&apos;ll miss you, <span style={{ fontStyle: "italic", color: "#c97f3f" }}>{guest.firstName}</span></>
+                            <>{lang === "es" ? "Te extrañaremos," : "We&apos;ll miss you,"} <span style={{ fontStyle: "italic", color: "#c97f3f" }} translate="no">{guest.firstName}</span></>
                         ) : (
-                            <>Thank you, <span style={{ fontStyle: "italic", color: "#c97f3f" }}>{guest.firstName}</span>!</>
+                            <>{lang === "es" ? "¡Gracias," : "Thank you,"} <span style={{ fontStyle: "italic", color: "#c97f3f" }} translate="no">{guest.firstName}</span>!</>
                         )}
                     </h1>
 
                     <p className="mt-4 text-sm leading-relaxed mx-auto max-w-xs" style={{ color: `${SKY_DEEP}99` }}>
                         {attendingNeither
-                            ? "We're so grateful you're still part of our story — you're always welcome to celebrate from afar."
-                            : `We've saved your spot${partySize > 1 ? ` for ${partySize} guests` : ""}. Your official RSVP invitation is on its way.`}
+                            ? lang === "es"
+                                ? "Agradecemos mucho que sigas siendo parte de nuestra historia. Siempre puedes celebrar con nosotros a la distancia."
+                                : "We're so grateful you're still part of our story — you're always welcome to celebrate from afar."
+                            : lang === "es"
+                                ? `Guardamos tu lugar${partySize > 1 ? ` para ${partySize} personas` : ""}. Tu invitación oficial para confirmar asistencia está en camino.`
+                                : `We've saved your spot${partySize > 1 ? ` for ${partySize} guests` : ""}. Your official RSVP invitation is on its way.`}
                     </p>
 
                     {/* Summary card */}
@@ -487,7 +494,7 @@ export default function MyDetailsPage() {
                         )}
                         <div className="relative z-10">
                             <p className="text-[0.58rem] uppercase tracking-[0.24em] mb-4" style={{ color: APRICOT }}>
-                                Your Confirmation
+                                {lang === "es" ? "Tu confirmación" : "Your Confirmation"}
                             </p>
                             {summaryRows.map((row, i) => (
                                 <motion.div
@@ -499,7 +506,7 @@ export default function MyDetailsPage() {
                                     style={{ borderColor: "rgba(255,247,236,0.1)" }}
                                 >
                                     <span className="text-xs" style={{ color: "rgba(255,247,236,0.5)" }}>{row.label}</span>
-                                    <span className="text-sm" style={{ color: IVORY, fontFamily: SANS }}>{row.value}</span>
+                                    <span className="text-sm" style={{ color: IVORY, fontFamily: SANS }} translate={i === 0 ? "no" : undefined}>{row.value}</span>
                                 </motion.div>
                             ))}
                         </div>
@@ -528,10 +535,10 @@ export default function MyDetailsPage() {
                             </div>
                             <div>
                                 <p className="text-xs uppercase tracking-[0.14em]" style={{ color: `${SKY_DEEP}80` }}>
-                                    Want to celebrate from afar?
+                                    {lang === "es" ? "¿Quieres celebrar desde lejos?" : "Want to celebrate from afar?"}
                                 </p>
                                 <p className="text-sm mt-1" style={{ color: SKY_DEEP, fontFamily: SANS }}>
-                                    You&apos;re always welcome to send a gift from our registry.
+                                    {lang === "es" ? "Siempre puedes enviarnos un regalo de nuestra lista." : "You&apos;re always welcome to send a gift from our registry."}
                                 </p>
                             </div>
                         </motion.div>
@@ -555,7 +562,7 @@ export default function MyDetailsPage() {
                             </div>
                             <div>
                                 <p className="text-xs uppercase tracking-[0.14em]" style={{ color: `${SKY_DEEP}80` }}>
-                                    We&apos;ll send your official RSVP to
+                                    {lang === "es" ? "Te enviaremos la invitación oficial para confirmar asistencia a" : "We&apos;ll send your official RSVP to"}
                                 </p>
                                 <p className="text-sm mt-1 break-all" style={{ color: SKY_DEEP, fontFamily: SANS }}>
                                     {contactAddress}
@@ -574,7 +581,7 @@ export default function MyDetailsPage() {
                             style={{ backgroundColor: `${APRICOT}14`, border: `1px solid ${APRICOT}44` }}
                         >
                             <p className="text-[0.58rem] uppercase tracking-[0.2em] mb-4 flex items-center gap-2" style={{ color: "#c97f3f" }}>
-                                <Clock size={11} /> What Happens Next
+                                <Clock size={11} /> {lang === "es" ? "Qué sigue" : "What Happens Next"}
                             </p>
                             <div className="relative">
                                 {/* connecting line */}
@@ -583,9 +590,17 @@ export default function MyDetailsPage() {
                                     style={{ backgroundColor: `${APRICOT}88` }}
                                 />
                                 {[
-                                    "Your official RSVP invitation will be sent closer to the wedding.",
-                                    "You'll confirm your entrée, plus-one, and travel details there.",
-                                    "In the meantime, feel free to explore travel and wedding info below.",
+                                    ...(lang === "es"
+                                        ? [
+                                            "Te enviaremos la invitación oficial para confirmar asistencia cuando se acerque la boda.",
+                                            "Allí podrás elegir tu plato, agregar acompañantes y compartir los detalles de viaje.",
+                                            "Mientras tanto, puedes consultar la información de viaje y de la boda aquí abajo.",
+                                        ]
+                                        : [
+                                            "Your official RSVP invitation will be sent closer to the wedding.",
+                                            "You'll confirm your entrée, plus-one, and travel details there.",
+                                            "In the meantime, feel free to explore travel and wedding info below.",
+                                        ]),
                                 ].map((item, i) => (
                                     <motion.div
                                         key={i}
@@ -613,7 +628,7 @@ export default function MyDetailsPage() {
                     >
                         <Shield size={13} style={{ color: `${SKY_DEEP}55`, marginTop: 1, flexShrink: 0 }} />
                         <p className="text-xs leading-relaxed text-left" style={{ color: `${SKY_DEEP}80` }}>
-                            Need to update your details? Reach out to us directly and we&apos;ll take care of it before the formal RSVP opens.
+                            {lang === "es" ? "¿Necesitas actualizar tus datos? Contáctanos directamente y nos encargaremos antes de que se habilite la confirmación formal." : "Need to update your details? Reach out to us directly and we&apos;ll take care of it before the formal RSVP opens."}
                         </p>
                     </div>
 
@@ -632,7 +647,7 @@ export default function MyDetailsPage() {
                             className="block w-full py-3.5 rounded-full text-xs uppercase tracking-[0.2em] text-center transition-all hover:scale-[1.02]"
                             style={{ backgroundColor: SKY_DEEP, color: IVORY, fontFamily: SANS, boxShadow: `0 8px 24px ${SKY_DEEP}40` }}
                         >
-                            Return Home
+                            {lang === "es" ? "Volver al inicio" : "Return Home"}
                         </Link>
                     </div>
                 </motion.div>

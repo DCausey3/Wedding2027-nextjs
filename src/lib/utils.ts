@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { Language } from "@/components/providers/LanguageProvider";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -12,6 +13,14 @@ export function formatDate(iso: string, opts?: Intl.DateTimeFormatOptions): stri
     day: "numeric",
     ...opts,
   });
+}
+
+export function formatLocalizedDate(
+  date: Date,
+  language: Language,
+  opts: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" },
+): string {
+  return date.toLocaleDateString(language === "es" ? "es-CO" : "en-US", opts);
 }
 
 export function getTimeLeft(targetISO: string) {
