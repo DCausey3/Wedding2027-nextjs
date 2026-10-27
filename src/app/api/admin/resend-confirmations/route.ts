@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server"; // adjust path if your project's differs
+import { getServerAuthUser } from "@/lib/auth-utils";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 /**
  * GET  /api/admin/resend-confirmations
@@ -9,28 +10,15 @@ import { createClient } from "@/utils/supabase/server"; // adjust path if your p
  * POST /api/admin/resend-confirmations  { guestId }  -> resend to one guest
  * POST /api/admin/resend-confirmations  { all: true } -> resend to everyone pending
  *
- * Auth: this checks the requester's email against ADMIN_EMAILS. Adjust the
- * isAdmin check below to match however your session/cookie actually carries
- * the logged-in guest's email — this assumes it's passed as a header or you
- * wire it to your existing session lookup.
  */
 
-function isAdminEmail(email: string | null | undefined) {
-    if (!email) return false;
-    const admins = (process.env.ADMIN_EMAILS || "")
-        .split(",")
-        .map((e) => e.trim().toLowerCase())
-        .filter(Boolean);
-    return admins.includes(email.toLowerCase());
-}
-
 export async function GET(req: NextRequest) {
-    const requesterEmail = req.headers.get("x-admin-email"); // TODO: wire to real session
-    if (!isAdminEmail(requesterEmail)) {
+    const user = await getServerAuthUser();
+    if (!user?.isAdmin) {
         return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
         .from("guests")
         .select("id, first_name, last_name, email, phone, std_attending_colombia, std_attending_florida, std_responded, confirmation_email_sent, confirmation_email_sent_at")
@@ -46,14 +34,14 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const requesterEmail = req.headers.get("x-admin-email"); // TODO: wire to real session
-    if (!isAdminEmail(requesterEmail)) {
+    const user = await getServerAuthUser();
+    if (!user?.isAdmin) {
         return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
     const body = await req.json();
     const { guestId, all } = body;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     let targets: any[] = [];
 

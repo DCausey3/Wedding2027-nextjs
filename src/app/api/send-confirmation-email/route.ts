@@ -1,6 +1,6 @@
 // Place at: app/api/send-confirmation-email/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 type Lang = "en" | "es";
 type WeddingKey = "Colombia" | "USA";
@@ -273,7 +273,7 @@ export async function POST(req: NextRequest) {
         // Everything in the email comes from the database, not from the request body.
         // That way this endpoint can only ever email the address a guest saved for
         // themselves — it can't be used to send arbitrary mail to arbitrary people.
-        const supabase = await createClient();
+        const supabase = createAdminClient();
 
         const { data: guest, error: guestErr } = await supabase
             .from("guests")
@@ -432,6 +432,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true, ...results });
     } catch (err: any) {
         console.error("Fatal /api/send-confirmation-email error:", err);
-        return NextResponse.json({ error: err.message ?? "Server error" }, { status: 500 });
+        return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
     }
 }

@@ -1,18 +1,17 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { getServerAuthUser } from "@/lib/auth-utils";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export const dynamic = "force-dynamic";
 // GET /api/resend-missing-confirmations — PREVIEW ONLY (Sends no emails)
 export async function GET() {
     try {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseServiceKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-        if (!supabaseUrl || !supabaseServiceKey) {
-            return NextResponse.json({ error: "Supabase configuration missing" }, { status: 500 });
+        const user = await getServerAuthUser();
+        if (!user?.isAdmin) {
+            return NextResponse.json({ error: "Not authorized" }, { status: 403 });
         }
 
-        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        const supabase = createAdminClient();
 
         // Fetch guests where std_responded is true and confirmation_email_sent is false/null
         const { data: guests, error } = await supabase
@@ -44,14 +43,12 @@ export async function GET() {
 }
 export async function POST(req: Request) {
     try {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseServiceKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-        if (!supabaseUrl || !supabaseServiceKey) {
-            return NextResponse.json({ error: "Supabase configuration missing" }, { status: 500 });
+        const user = await getServerAuthUser();
+        if (!user?.isAdmin) {
+            return NextResponse.json({ error: "Not authorized" }, { status: 403 });
         }
 
-        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        const supabase = createAdminClient();
 
         // 1. Fetch all guests who responded but haven't received their confirmation email
         const { data: guests, error } = await supabase

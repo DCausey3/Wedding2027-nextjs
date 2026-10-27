@@ -1,22 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server"; // adjust path if your project's differs
-
-function isAdminEmail(email: string | null | undefined) {
-    if (!email) return false;
-    const admins = (process.env.ADMIN_EMAILS || "")
-        .split(",")
-        .map((e) => e.trim().toLowerCase())
-        .filter(Boolean);
-    return admins.includes(email.toLowerCase());
-}
+import { getServerAuthUser } from "@/lib/auth-utils";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export async function GET(req: NextRequest) {
-    const requesterEmail = req.headers.get("x-admin-email");
-    if (!isAdminEmail(requesterEmail)) {
+    const user = await getServerAuthUser();
+    if (!user?.isAdmin) {
         return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
         .from("guests")
         .select(

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
 import { getServerAuthUser } from "@/lib/auth-utils";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export async function PATCH(
   req: NextRequest,
@@ -26,7 +26,7 @@ export async function PATCH(
     if (body.side !== undefined) updates.side = body.side || null;
     if (body.notes !== undefined) updates.notes = body.notes || null;
 
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("guests")
       .update(updates)
@@ -54,7 +54,7 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { error } = await supabase.from("guests").delete().eq("id", id);
     if (error) throw new Error(error.message);
     return NextResponse.json({ success: true });
