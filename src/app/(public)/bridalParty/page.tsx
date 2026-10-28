@@ -18,6 +18,7 @@ const IVORY = "#FFF7EC";
 const SAND = "#E6D2B3";
 const APRICOT = "#FFB482";
 const PINK = "#ec4899";
+const GREENERY = "#7FAA6E";
 
 const SERIF = "'Cormorant Garamond', serif";
 const HAND = "'Caveat', 'Segoe Script', cursive";
@@ -26,18 +27,18 @@ interface Member {
     name: string;
     role: string;
     side: 'bride' | 'groom';
-    location: string; // "City, State"
+    location?: string;    // "City, State" — optional; people without one are left out of the city/state stats
     howTheyKnowUs: Record<Language, string>;
     photo?: string;       // optional — falls back to initials avatar
     featured?: boolean;   // headliners get the spotlight row
+    processional?: boolean; // ring bearer + flower girls: shown in their own section instead of the side grids
     superlative?: Record<Language, string>; // fun "most likely to..." line shown on the back of the card
     funFact?: Record<Language, string>; // optional extra line on the back of the card
     tag?: string;         // small chip, e.g. "Causey Brother #1"
 }
 
 // TODO: add `photo: '/bridal-party/name.jpg'` for each person as photos come in.
-// TODO: swap the placeholder superlatives and add real funFact lines — these are
-// starter ideas so the cards have personality out of the box.
+// TODO: add `location` for the ring bearer and flower girls if you want them counted in the city/state stats.
 const BRIDAL_PARTY: Member[] = [
     // ---- Jhoana's side ----
     { name: 'Vivi Cardenas', role: 'Matron of Honor', side: 'bride', location: 'Atlanta, Georgia', featured: true,
@@ -75,7 +76,7 @@ const BRIDAL_PARTY: Member[] = [
     // Causey brothers, oldest to youngest
     { name: 'Nick Causey', role: 'Groomsman', side: 'groom', location: 'Pensacola, Florida', tag: 'Causey Brother #1',
       howTheyKnowUs: { en: 'Oldest brother', es: 'Hermano mayor' },
-      superlative: { en: 'Most likely to be ready party and drink', es: 'La energía del hermano mayor de siempre' } },
+      superlative: { en: 'Most likely to be ready party and drink', es: 'El que siempre está listo para la fiesta y para brindar' } },
     { name: 'Brandon Causey', role: 'Groomsman', side: 'groom', location: 'Atlanta, Georgia', tag: 'Causey Brother #2',
       howTheyKnowUs: { en: 'Second oldest brother', es: 'Segundo hermano mayor' },
       superlative: { en: 'Most likely to say I bet I am still faster than you', es: 'El que probablemente dirá que apuesto a que aún soy más rápido que tú' } },
@@ -84,13 +85,26 @@ const BRIDAL_PARTY: Member[] = [
       superlative: { en: 'Most likely to send a youtube video', es: 'El que probablemente enviará un video de YouTube' } },
     { name: 'Damarcus Causey', role: 'Groomsman', side: 'groom', location: 'Dallas, Texas', tag: 'Causey Brother #4',
       howTheyKnowUs: { en: 'Fourth oldest brother', es: 'Cuarto hermano mayor' },
-      superlative: { en: 'Most likely wear a hat ', es: 'Sin duda liderará la pista de baile' } },
+      superlative: { en: 'Most likely wear a hat ', es: 'El que probablemente usará sombrero' } },
+
+    // ---- Ring bearer + flower girls (own section) ----
+    { name: 'Malik Ross', role: 'Ring Bearer', side: 'groom', processional: true,
+      howTheyKnowUs: { en: 'Cousin of the groom', es: 'Primo del novio' },
+      superlative: { en: 'Most likely to go bald first', es: 'El que probablemente se quedará calvo primero' } },
+    { name: 'Trinity', role: 'Flower Girl', side: 'groom', processional: true,
+      howTheyKnowUs: { en: 'Niece of the groom (Brandon’s daughter)', es: 'Sobrina del novio (hija de Brandon)' } },
+    { name: 'Madison', role: 'Flower Girl', side: 'groom', processional: true,
+      howTheyKnowUs: { en: 'Niece of the groom (Davinus’s daughter)', es: 'Sobrina del novio (hija de Davinus)' } },
+    { name: 'Luciana', role: 'Flower Girl', side: 'bride', processional: true,
+      howTheyKnowUs: { en: 'Cousin of the bride', es: 'Prima de la novia' } },
 ];
 
-const ACCENTS = [SKY_DEEP, APRICOT, "#7FAA6E", "#A4D4F4", "#c98a55", "#5FA8D3"];
+const ACCENTS = [SKY_DEEP, APRICOT, GREENERY, "#A4D4F4", "#c98a55", "#5FA8D3"];
 
 function roleEmoji(role: string) {
     const r = role.toLowerCase();
+    if (r.includes('flower')) return '🌸';
+    if (r.includes('ring')) return '💍';
     if (r.includes('matron') || r.includes('maid of honor')) return '👑';
     if (r.includes('best man')) return '🎩';
     if (r.includes('bridesmaid')) return '💐';
@@ -106,29 +120,56 @@ function roleLabel(role: string, language: Language) {
         Bridesmaid: "Dama de honor",
         "Co-Best Man": "Copadrino",
         Groomsman: "Padrino",
+        // CONFIRM these two with a Spanish-speaking family member; wedding vocabulary varies by country.
+        "Ring Bearer": "Paje de los anillos",
+        "Flower Girl": "Niña de las flores",
     };
     return spanishRoles[role] ?? role;
 }
 
-const brideFeatured = BRIDAL_PARTY.filter((m) => m.side === 'bride' && m.featured);
-const brideRest = BRIDAL_PARTY.filter((m) => m.side === 'bride' && !m.featured);
-const groomFeatured = BRIDAL_PARTY.filter((m) => m.side === 'groom' && m.featured);
-const groomRest = BRIDAL_PARTY.filter((m) => m.side === 'groom' && !m.featured);
+const brideFeatured = BRIDAL_PARTY.filter((m) => m.side === 'bride' && m.featured && !m.processional);
+const brideRest = BRIDAL_PARTY.filter((m) => m.side === 'bride' && !m.featured && !m.processional);
+const groomFeatured = BRIDAL_PARTY.filter((m) => m.side === 'groom' && m.featured && !m.processional);
+const groomRest = BRIDAL_PARTY.filter((m) => m.side === 'groom' && !m.featured && !m.processional);
+const processional = BRIDAL_PARTY.filter((m) => m.processional);
 
-const CITIES = Array.from(new Set(BRIDAL_PARTY.map((m) => m.location.split(',')[0].trim())));
-const STATES = Array.from(new Set(BRIDAL_PARTY.map((m) => (m.location.split(',')[1] || '').trim()).filter(Boolean)));
+// Team sizes include everyone on that side, ring bearer and flower girls too.
+const BRIDE_COUNT = BRIDAL_PARTY.filter((m) => m.side === 'bride').length;
+const GROOM_COUNT = BRIDAL_PARTY.filter((m) => m.side === 'groom').length;
+
+const CITIES = Array.from(
+    new Set(
+        BRIDAL_PARTY
+            .map((m) => m.location?.split(',')[0].trim())
+            .filter((c): c is string => !!c),
+    ),
+);
+const STATES = Array.from(
+    new Set(
+        BRIDAL_PARTY
+            .map((m) => (m.location?.split(',')[1] || '').trim())
+            .filter(Boolean),
+    ),
+);
 
 // ---------- Confetti ----------
-async function fireConfetti(origin: { x: number; y: number }, count = 40) {
-    const confetti = (await import('canvas-confetti')).default;
-    confetti({
-        particleCount: count,
-        spread: 70,
-        startVelocity: 28,
-        ticks: 120,
-        origin,
-        colors: [APRICOT, PINK, '#A4D4F4', IVORY, '#7FAA6E'],
-    });
+function fireConfetti(origin: { x: number; y: number }, count = 40) {
+    if (typeof window === "undefined") return;
+
+    void import("canvas-confetti")
+        .then(({ default: confetti }) => {
+            confetti({
+                particleCount: count,
+                spread: 70,
+                startVelocity: 28,
+                ticks: 120,
+                origin,
+                colors: [APRICOT, PINK, "#A4D4F4", IVORY, GREENERY],
+            });
+        })
+        .catch((error: unknown) => {
+            console.error("Failed to load bridal-party confetti:", error);
+        });
 }
 
 // ---------- Count-up number ----------
@@ -306,10 +347,12 @@ function MemberCard({ member, index, featured = false }: { member: Member; index
                         <h3 style={{ fontFamily: SERIF, fontSize: '1.3rem', fontWeight: 400, color: IVORY, lineHeight: 1.15 }}>
                             <span translate="no">{member.name}</span>
                         </h3>
-                        <div className="flex items-center gap-1 mt-1">
-                            <MapPin size={10} style={{ color: APRICOT }} />
-                            <p style={{ fontSize: '0.7rem', color: 'rgba(255,247,236,0.7)' }} translate="no">{member.location}</p>
-                        </div>
+                        {member.location && (
+                            <div className="flex items-center gap-1 mt-1">
+                                <MapPin size={10} style={{ color: APRICOT }} />
+                                <p style={{ fontSize: '0.7rem', color: 'rgba(255,247,236,0.7)' }} translate="no">{member.location}</p>
+                            </div>
+                        )}
 
                         <div className="w-8 h-px my-3" style={{ backgroundColor: APRICOT, opacity: 0.6 }} />
 
@@ -386,6 +429,40 @@ function SideSection({
     );
 }
 
+// ---------- Ring bearer + flower girls ----------
+function ProcessionalSection({ members, startIndex }: { members: Member[]; startIndex: number }) {
+    const { lang } = useLanguage();
+    if (members.length === 0) return null;
+    return (
+        <div className="mt-24">
+            <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="flex items-center gap-3 mb-10"
+            >
+                <div className="h-8 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: GREENERY }} />
+                <div>
+                    <h2 style={{ fontFamily: SERIF, fontSize: '1.8rem', fontWeight: 400, color: SKY_DEEP }}>
+                        {lang === "es" ? "El paje y las niñas de las flores" : "The Ring Bearer & Flower Girls"}
+                    </h2>
+                    <p className="text-xs mt-0.5" style={{ color: `${SKY_DEEP}80` }}>
+                        {lang === "es"
+                            ? "Anillos entregados, pétalos esparcidos y corazones conquistados."
+                            : "Rings delivered, petals scattered, hearts stolen."}
+                    </p>
+                </div>
+            </motion.div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {members.map((m, i) => (
+                    <MemberCard key={m.name} member={m} index={startIndex + i} />
+                ))}
+            </div>
+        </div>
+    );
+}
+
 // ---------- Face-off banner ----------
 function FaceOff() {
     const { lang } = useLanguage();
@@ -402,7 +479,7 @@ function FaceOff() {
                 >
                     <p className="uppercase" style={{ fontSize: '0.6rem', letterSpacing: '0.25em', color: IVORY }}>{lang === "es" ? "Equipo" : "Team"}</p>
                     <p translate="no" style={{ fontFamily: SERIF, fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', color: IVORY, fontWeight: 300 }}>Jhoana</p>
-                    <p className="mt-1" style={{ fontSize: '0.7rem', color: 'rgba(255,247,236,0.8)' }}>{brideFeatured.length + brideRest.length} {lang === "es" ? "integrantes" : "strong"}</p>
+                    <p className="mt-1" style={{ fontSize: '0.7rem', color: 'rgba(255,247,236,0.8)' }}>{BRIDE_COUNT} {lang === "es" ? "integrantes" : "strong"}</p>
                 </motion.div>
                 <motion.div
                     initial={{ x: 120, opacity: 0 }}
@@ -414,7 +491,7 @@ function FaceOff() {
                 >
                     <p className="uppercase" style={{ fontSize: '0.6rem', letterSpacing: '0.25em', color: SKY_DEEP }}>{lang === "es" ? "Equipo" : "Team"}</p>
                     <p translate="no" style={{ fontFamily: SERIF, fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', color: SKY_DEEP, fontWeight: 400 }}>Damariel</p>
-                    <p className="mt-1" style={{ fontSize: '0.7rem', color: SKY_DEEP, opacity: 0.7 }}>{groomFeatured.length + groomRest.length} {lang === "es" ? "integrantes" : "strong"}</p>
+                    <p className="mt-1" style={{ fontSize: '0.7rem', color: SKY_DEEP, opacity: 0.7 }}>{GROOM_COUNT} {lang === "es" ? "integrantes" : "strong"}</p>
                 </motion.div>
             </div>
             <motion.div
@@ -492,6 +569,8 @@ export default function BridalPartyPage() {
         { num: CITIES.length, label: lang === "es" ? "Ciudades representadas" : 'Cities Represented' },
         { num: STATES.length, label: lang === "es" ? "Estados, un solo equipo" : 'States, One Wedding Squad' },
     ];
+
+    const sideCardCount = brideFeatured.length + brideRest.length + groomFeatured.length + groomRest.length;
 
     return (
         <div style={{ backgroundColor: IVORY }}>
@@ -597,6 +676,8 @@ export default function BridalPartyPage() {
                         startIndex={brideFeatured.length + brideRest.length}
                         accentTag={APRICOT}
                     />
+
+                    <ProcessionalSection members={processional} startIndex={sideCardCount} />
                 </div>
             </section>
 
