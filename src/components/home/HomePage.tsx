@@ -710,7 +710,7 @@ function WeddingsSection({
                             {attendingColombia && (
                                 <WeddingCountdownCard
                                     label={lang === "es" ? "Boda en Colombia" : "Colombia"}
-                                    place="Pereira, Colombia"
+                                    place="Manizales, Colombia"
                                     date={formatLocalizedDate(new Date(WEDDING_DATES.colombia), lang)}
                                     targetDate={WEDDING_DATES.colombia}
                                     accentColor={SKY}
